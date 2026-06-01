@@ -3,8 +3,11 @@
 End-to-end analytics project on Indian mutual fund data (NAVs, AUM, SIP inflows,
 scheme performance, investor transactions and portfolio holdings).
 
-> **Day 1 scope only:** project setup, data ingestion + quality report,
-> fund_master exploration, AMFI code validation, and live NAV fetch.
+> **Scope so far:**
+> - **Day 1:** project setup, data ingestion + quality report, fund_master
+>   exploration, AMFI code validation, live NAV fetch.
+> - **Day 2:** data cleaning pipeline, SQLite database (`schema.sql`), data load
+>   and validation checks (`queries.sql`).
 
 ## Project structure
 
@@ -12,14 +15,17 @@ scheme performance, investor transactions and portfolio holdings).
 bluestock_mf_capstone/
 ├── data/
 │   ├── raw/          # 10 source CSV datasets
-│   └── processed/    # generated outputs (e.g. live_nav.csv)
+│   └── processed/    # generated outputs (clean_*.csv, live_nav.csv, bluestock.db)
 ├── notebooks/        # exploratory notebooks
-├── sql/              # SQL scripts
+├── sql/              # schema.sql, queries.sql
 ├── dashboard/        # dashboard assets
-├── reports/          # generated reports (data_quality_report.txt)
+├── reports/          # generated reports (data_quality, day2_validation)
 ├── scripts/
-│   ├── data_ingestion.py
-│   └── live_nav_fetch.py
+│   ├── _common.py            # shared paths + logging
+│   ├── data_ingestion.py     # Day 1
+│   ├── live_nav_fetch.py     # Day 1
+│   ├── data_cleaning.py      # Day 2
+│   └── build_database.py     # Day 2
 ├── logs/
 ├── requirements.txt
 ├── .gitignore
@@ -68,3 +74,16 @@ python scripts/live_nav_fetch.py
 
 `live_nav_fetch.py` calls the public AMFI-backed API `https://api.mfapi.in/mf/<amfi_code>`
 and requires internet access.
+
+```bash
+# Day 2: clean all datasets -> data/processed/clean_*.csv
+python scripts/data_cleaning.py
+
+# Day 2: build SQLite DB from sql/schema.sql, load cleaned data, run validation
+# checks and sql/queries.sql -> data/processed/bluestock.db
+#                            -> reports/day2_validation_report.txt
+python scripts/build_database.py
+```
+
+> Generated artifacts (`data/processed/`, `reports/`, `logs/`, `.venv/`) are
+> git-ignored and fully reproducible by re-running the scripts above.

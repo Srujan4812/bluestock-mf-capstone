@@ -4,6 +4,10 @@ __pycache__/
 .venv/
 venv/
 env/
+.env
+
+# Databases
+*.db
 
 # Data (keep structure via .gitkeep, ignore bulk/generated data)
 data/processed/*

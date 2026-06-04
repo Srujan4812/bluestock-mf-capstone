@@ -1,0 +1,45 @@
+======================================================================
+Day 4 - Fund Performance Analytics Validation Report
+Generated At : 2026-06-04 22:23:38
+======================================================================
+
+1. DAILY RETURNS DISTRIBUTION VALIDATION
+----------------------------------------
+Total daily NAV returns calculated: 45960
+Mean daily return (all funds): 0.063105%
+Std Dev daily return (all funds): 1.029041%
+Min daily return: -5.810201%
+Max daily return: 6.471309%
+Kurtosis of daily returns: 1.3673
+Skewness of daily returns: 0.0427
+
+2. TOP 5 PERFORMING FUNDS (SCORECARD)
+-------------------------------------
+Rank 1: Mirae Asset Large Cap Fund - Regular - Growth (AMFI: 148567)
+  Score: 86.25 | 3Yr CAGR: 34.00% | Sharpe: 1.45 | Alpha: 26.98 | Expense Ratio: 1.46% | Max DD: -11.27%
+Rank 2: ICICI Pru Midcap Fund - Regular - Growth (AMFI: 120505)
+  Score: 82.25 | 3Yr CAGR: 31.78% | Sharpe: 1.18 | Alpha: 29.26 | Expense Ratio: 1.36% | Max DD: -18.19%
+Rank 3: Kotak Flexicap Fund - Regular - Growth (AMFI: 120843)
+  Score: 82.00 | 3Yr CAGR: 29.58% | Sharpe: 1.31 | Alpha: 27.33 | Expense Ratio: 1.45% | Max DD: -12.97%
+Rank 4: HDFC Mid-Cap Opportunities Fund - Regular - Growth (AMFI: 100033)
+  Score: 80.75 | 3Yr CAGR: 32.44% | Sharpe: 1.09 | Alpha: 27.20 | Expense Ratio: 1.38% | Max DD: -16.22%
+Rank 5: ICICI Pru Bluechip Fund - Direct - Growth (AMFI: 120504)
+  Score: 80.00 | 3Yr CAGR: 32.49% | Sharpe: 1.03 | Alpha: 21.19 | Expense Ratio: 0.80% | Max DD: -12.59%
+
+3. TRACKING ERRORS OF TOP 5 FUNDS (3-YEAR PERIOD)
+-------------------------------------------------
+Mirae Asset Large Cap Fund:
+  Tracking Error vs Nifty 50: 19.1868%
+  Tracking Error vs Nifty 100: 18.7974%
+ICICI Pru Midcap Fund:
+  Tracking Error vs Nifty 50: 22.8447%
+  Tracking Error vs Nifty 100: 23.2661%
+Kotak Flexicap Fund:
+  Tracking Error vs Nifty 50: 20.5067%
+  Tracking Error vs Nifty 100: 20.6540%
+HDFC Mid-Cap Opportunities Fund:
+  Tracking Error vs Nifty 50: 22.8222%
+  Tracking Error vs Nifty 100: 22.4976%
+ICICI Pru Bluechip Fund:
+  Tracking Error vs Nifty 50: 18.8211%
+  Tracking Error vs Nifty 100: 18.7299%

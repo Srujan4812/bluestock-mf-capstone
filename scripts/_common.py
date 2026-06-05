@@ -11,7 +11,8 @@ PROCESSED_DIR: Path = ROOT / "data" / "processed"
 REPORTS_DIR: Path = ROOT / "reports"
 SQL_DIR: Path = ROOT / "sql"
 LOGS_DIR: Path = ROOT / "logs"
-DB_PATH: Path = PROCESSED_DIR / "bluestock.db"
+DB_DIR: Path = ROOT / "data" / "db"
+DB_PATH: Path = DB_DIR / "bluestock_mf.db"
 
 
 def get_logger(name: str) -> logging.Logger:

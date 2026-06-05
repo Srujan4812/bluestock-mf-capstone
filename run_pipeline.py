@@ -48,13 +48,14 @@ def main() -> None:
     print("======================================================================")
     
     steps = [
-        ("data_cleaning.py", "Day 2: Cleaning raw CSV files"),
-        ("build_database.py", "Day 2: Creating SQLite database & running basic integrity queries"),
-        ("performance_analytics.py", "Day 4: Calculating CAGRs, risk-adjusted ratios, alpha/beta, scorecard"),
-        ("advanced_analytics.py", "Day 6: Computing VaR, cohorts, continuity, HHI, and compiling Jupyter"),
-        ("export_dashboard.py", "Day 5: Generating dashboard mockup screenshots & Dashboard PDF"),
-        ("generate_presentation.py", "Day 7: Generating PPTX presentation deck"),
-        ("generate_final_report.py", "Day 7: Generating Executive PDF report")
+        ("etl_pipeline.py", "ETL Pipeline: Ingestion, Cleaning, and SQLite Load"),
+        ("compute_metrics.py", "Computing Returns, Sharpe, Sortino, Alpha, Beta, Max Drawdown, and Scorecard"),
+        ("advanced_analytics.py", "Advanced Analytics: VaR, Cohorts, Churn, HHI, Monte Carlo & Markowitz Optimization"),
+        ("generate_all_notebooks.py", "Generating and Executing all 5 Jupyter Notebooks"),
+        ("email_report.py", "Generating Weekly HTML Email Performance Report Preview"),
+        ("export_dashboard.py", "Generating Dashboard Mockups & Dashboard.pdf"),
+        ("generate_presentation.py", "Generating PowerPoint Presentation Slide Deck"),
+        ("generate_final_report.py", "Generating Executive Final PDF Report")
     ]
     
     success = True
@@ -69,9 +70,9 @@ def main() -> None:
     if success:
         print("PIPELINE EXECUTED SUCCESSFULLY! All deliverables are up-to-date.")
         print("Deliverables available under:")
-        print(f"  - Database: data/processed/bluestock.db")
-        print(f"  - Jupyter Notebooks: notebooks/EDA_Analysis.ipynb, Performance_Analytics.ipynb, Advanced_Analytics.ipynb")
-        print(f"  - Reports: reports/Final_Report.pdf, reports/Dashboard.pdf, reports/day4_performance_report.txt")
+        print(f"  - Database: data/db/bluestock_mf.db")
+        print(f"  - Jupyter Notebooks: notebooks/01_data_ingestion.ipynb to 05_advanced_analytics.ipynb")
+        print(f"  - Reports: reports/Final_Report.pdf, reports/Dashboard.pdf, reports/weekly_performance_report.html")
         print(f"  - Presentation: reports/Presentation.pptx")
         print(f"  - Cleaned CSVs: data/processed/clean_*.csv")
     else:

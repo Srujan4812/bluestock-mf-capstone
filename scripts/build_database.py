@@ -102,6 +102,7 @@ def main() -> None:
     data_cleaning.run()  # ensure fresh cleaned CSVs
     if DB_PATH.exists():
         DB_PATH.unlink()
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(DB_PATH)

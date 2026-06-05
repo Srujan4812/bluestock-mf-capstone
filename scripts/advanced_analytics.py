@@ -7,7 +7,8 @@ Computes:
 3. Investor Cohort Analysis (2024 vs 2025 cohorts).
 4. SIP Continuation / Churn Analysis (flagging at-risk investors).
 5. Sector Concentration Analysis (HHI of sector weights).
-6. Generates and executes the Jupyter notebook notebooks/Advanced_Analytics.ipynb.
+6. B3 - Monte Carlo Simulation: project 5-year NAV growth for the top scorecard fund.
+7. B4 - Markowitz Efficient Frontier: portfolio optimization for 5 selected funds.
 """
 from __future__ import annotations
 
@@ -21,7 +22,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import nbformat as nbf
 
 # Ensure scripts path is in system path so we can import _common
 sys.path.append(str(Path(__file__).resolve().parent))
@@ -34,13 +34,13 @@ VAR_CVAR_PATH = PROCESSED_DIR / "var_cvar_report.csv"
 COHORT_PATH = PROCESSED_DIR / "cohort_analysis.csv"
 CONTINUITY_PATH = PROCESSED_DIR / "sip_continuity.csv"
 SECTOR_HHI_PATH = PROCESSED_DIR / "sector_hhi.csv"
+SCORECARD_PATH = PROCESSED_DIR / "fund_scorecard.csv"
 
 CHARTS_DIR = REPORTS_DIR / "charts"
 ROLLING_SHARPE_CHART = CHARTS_DIR / "rolling_sharpe_chart.png"
 SECTOR_HHI_CHART = CHARTS_DIR / "sector_concentration.png"
-NOTEBOOK_PATH = Path(__file__).resolve().parents[1] / "notebooks" / "Advanced_Analytics.ipynb"
 
-def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load datasets required for advanced analytics."""
     logger.info("Loading cleaned datasets for advanced analytics...")
     nav_df = pd.read_csv(PROCESSED_DIR / "clean_nav_history.csv")
@@ -48,11 +48,15 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
     holdings_df = pd.read_csv(PROCESSED_DIR / "clean_portfolio_holdings.csv")
     master_df = pd.read_csv(PROCESSED_DIR / "clean_fund_master.csv")
     
+    scorecard_df = pd.DataFrame()
+    if SCORECARD_PATH.exists():
+        scorecard_df = pd.read_csv(SCORECARD_PATH)
+    
     # Parse dates
     nav_df['date'] = pd.to_datetime(nav_df['date'])
     tx_df['transaction_date'] = pd.to_datetime(tx_df['transaction_date'])
     
-    return nav_df, tx_df, holdings_df, master_df
+    return nav_df, tx_df, holdings_df, master_df, scorecard_df
 
 def compute_var_cvar(nav_df: pd.DataFrame, master_df: pd.DataFrame) -> pd.DataFrame:
     """Compute 95% Historical VaR and CVaR for all 40 funds."""
@@ -265,204 +269,213 @@ def sector_concentration_analysis(holdings_df: pd.DataFrame, master_df: pd.DataF
     
     return hhi_df
 
-def generate_notebook() -> None:
-    """Generate the notebooks/Advanced_Analytics.ipynb notebook using nbformat."""
-    logger.info("Generating notebook at %s...", NOTEBOOK_PATH)
-    nb = nbf.v4.new_notebook()
+def compute_monte_carlo(nav_df: pd.DataFrame, scorecard_df: pd.DataFrame) -> None:
+    """B3 - Monte Carlo Simulation: project 5-year NAV growth for the top scorecard fund."""
+    logger.info("Computing Monte Carlo 5-Year NAV Projections...")
     
-    cells = [
-        nbf.v4.new_markdown_cell(
-            "# DAY 6 — Advanced Analytics & Risk Metrics\n\n"
-            "This notebook implements advanced analytics on mutual fund NAV history, portfolio holdings, "
-            "and investor transactions. It covers the following details:\n"
-            "1. **Historical Value at Risk (VaR 95%) & Conditional VaR (CVaR 95%)**\n"
-            "2. **Rolling 90-day Sharpe Ratio** for selected funds\n"
-            "3. **Investor Cohort Analysis** (2024 vs 2025 cohorts)\n"
-            "4. **SIP Continuation Analysis** (identifying at-risk investors)\n"
-            "5. **Sector Concentration Analysis** using Herfindahl-Hirschman Index (HHI)\n\n"
-            "## Setup & Load Data"
-        ),
-        nbf.v4.new_code_cell(
-            "import numpy as np\n"
-            "import pandas as pd\n"
-            "import matplotlib.pyplot as plt\n"
-            "import seaborn as sns\n\n"
-            "nav_df = pd.read_csv('../data/processed/clean_nav_history.csv')\n"
-            "tx_df = pd.read_csv('../data/processed/clean_investor_transactions.csv')\n"
-            "holdings_df = pd.read_csv('../data/processed/clean_portfolio_holdings.csv')\n"
-            "master_df = pd.read_csv('../data/processed/clean_fund_master.csv')\n\n"
-            "nav_df['date'] = pd.to_datetime(nav_df['date'])\n"
-            "tx_df['transaction_date'] = pd.to_datetime(tx_df['transaction_date'])\n\n"
-            "print(f\"Data loaded successfully.\")"
-        ),
-        nbf.v4.new_markdown_cell(
-            "## 1. Compute Historical VaR & CVaR (95%)\n\n"
-            "Historical Value at Risk (VaR) measures the potential loss in value of a fund over a daily horizon "
-            "with a 95% confidence level. Conditional VaR (CVaR) measures the expected loss on days when the loss exceeds the VaR."
-        ),
-        nbf.v4.new_code_cell(
-            "nav_df = nav_df.sort_values(['amfi_code', 'date'])\n"
-            "nav_df['daily_return'] = nav_df.groupby('amfi_code')['nav'].pct_change()\n\n"
-            "var_records = []\n"
-            "for code in nav_df['amfi_code'].unique():\n"
-            "    fund_returns = nav_df[(nav_df['amfi_code'] == code) & (nav_df['daily_return'].notna())]['daily_return']\n"
-            "    if fund_returns.empty:\n"
-            "        continue\n"
-            "    var_5th = np.percentile(fund_returns, 5)\n"
-            "    var_95 = -var_5th * 100\n"
-            "    below_var = fund_returns[fund_returns <= var_5th]\n"
-            "    cvar_95 = -below_var.mean() * 100 if not below_var.empty else var_95\n"
-            "    var_records.append({\n"
-            "        'amfi_code': code,\n"
-            "        'var_95_pct': var_95,\n"
-            "        'cvar_95_pct': cvar_95\n"
-            "    })\n"
-            "var_df = pd.DataFrame(var_records).merge(master_df[['amfi_code', 'scheme_name']], on='amfi_code')\n"
-            "var_df = var_df[['amfi_code', 'scheme_name', 'var_95_pct', 'cvar_95_pct']]\n"
-            "print(\"Top 5 Funds with Highest Daily VaR 95% (Highest Potential Loss):\")\n"
-            "print(var_df.sort_values('var_95_pct', ascending=False).head(5).to_string(index=False))"
-        ),
-        nbf.v4.new_markdown_cell(
-            "## 2. Rolling 90-day Sharpe Ratio\n\n"
-            "Rolling Sharpe ratio tracks the risk-adjusted returns of 5 key funds over a 90-day window to evaluate performance stability."
-        ),
-        nbf.v4.new_code_cell(
-            "selected_codes = [119551, 125497, 120503, 118632, 120841]\n"
-            "Rf_annual = 0.065\n"
-            "Rf_daily = Rf_annual / 252\n\n"
-            "plt.figure(figsize=(12, 6))\n"
-            "sns.set_theme(style=\"whitegrid\")\n\n"
-            "for code in selected_codes:\n"
-            "    fund_name = master_df[master_df['amfi_code'] == code]['scheme_name'].iloc[0].split(' - ')[0]\n"
-            "    fund_data = nav_df[(nav_df['amfi_code'] == code) & (nav_df['date'] >= '2022-06-01')].sort_values('date')\n"
-            "    fund_data = fund_data.dropna(subset=['daily_return']).copy()\n"
-            "    fund_data['excess_return'] = fund_data['daily_return'] - Rf_daily\n"
-            "    rolling_mean = fund_data['excess_return'].rolling(90).mean()\n"
-            "    rolling_std = fund_data['daily_return'].rolling(90).std()\n"
-            "    fund_data['rolling_sharpe'] = (rolling_mean / rolling_std) * np.sqrt(252)\n"
-            "    plt.plot(fund_data['date'], fund_data['rolling_sharpe'], label=fund_name, linewidth=1.5)\n\n"
-            "plt.title(\"Rolling 90-Day Sharpe Ratio Over Time (Rf = 6.5%)\", fontsize=13, fontweight='bold', pad=15)\n"
-            "plt.xlabel(\"Date\")\n"
-            "plt.ylabel(\"Annualized Sharpe Ratio\")\n"
-            "plt.legend(loc=\"upper left\")\n"
-            "plt.tight_layout()\n"
-            "plt.show()"
-        ),
-        nbf.v4.new_markdown_cell(
-            "## 3. Investor Cohort Analysis\n\n"
-            "Analyzes investor demographics and transaction activity by their acquisition year cohort (2024 vs 2025)."
-        ),
-        nbf.v4.new_code_cell(
-            "first_tx = tx_df.groupby('investor_id')['transaction_date'].min().reset_index()\n"
-            "first_tx['cohort'] = first_tx['transaction_date'].dt.year\n"
-            "tx_cohort = tx_df.merge(first_tx[['investor_id', 'cohort']], on='investor_id')\n\n"
-            "cohort_records = []\n"
-            "for yr in [2024, 2025]:\n"
-            "    cohort_tx = tx_cohort[tx_cohort['cohort'] == yr]\n"
-            "    total_investors = cohort_tx['investor_id'].nunique()\n"
-            "    sip_lump = cohort_tx[cohort_tx['transaction_type'].isin(['SIP', 'Lumpsum'])]['amount_inr'].sum()\n"
-            "    redemp = cohort_tx[cohort_tx['transaction_type'] == 'Redemption']['amount_inr'].sum()\n"
-            "    net_inv = sip_lump - redemp\n"
-            "    avg_sip = cohort_tx[cohort_tx['transaction_type'] == 'SIP']['amount_inr'].mean()\n"
-            "    cohort_details = cohort_tx.merge(master_df[['amfi_code', 'category']], on='amfi_code')\n"
-            "    top_cat = cohort_details['category'].mode().iloc[0] if not cohort_details.empty else 'N/A'\n"
-            "    cohort_records.append({\n"
-            "        'cohort': f\"{yr} Cohort\",\n"
-            "        'total_investors': total_investors,\n"
-            "        'total_net_investment_cr': net_inv / 1e7,\n"
-            "        'avg_sip_amount_inr': avg_sip,\n"
-            "        'top_fund_category': top_cat\n"
-            "    })\n"
-            "cohort_df = pd.DataFrame(cohort_records)\n"
-            "print(cohort_df.to_string(index=False))"
-        ),
-        nbf.v4.new_markdown_cell(
-            "## 4. SIP Continuation / Churn Analysis\n\n"
-            "Identifies at-risk investors based on transaction intervals. If the maximum gap between consecutive "
-            "SIP transactions exceeds 35 days, the investor is flagged as 'at-risk' for churn."
-        ),
-        nbf.v4.new_code_cell(
-            "sip_tx = tx_df[tx_df['transaction_type'] == 'SIP'].copy()\n"
-            "sip_counts = sip_tx.groupby('investor_id').size().reset_index(name='sip_count')\n"
-            "frequent_investors = sip_counts[sip_counts['sip_count'] >= 6]['investor_id']\n"
-            "sip_frequent = sip_tx[sip_tx['investor_id'].isin(frequent_investors)].sort_values(['investor_id', 'transaction_date'])\n\n"
-            "continuity_records = []\n"
-            "for inv_id, group in sip_frequent.groupby('investor_id'):\n"
-            "    diffs = group['transaction_date'].diff().dropna().dt.days\n"
-            "    avg_gap = diffs.mean()\n"
-            "    max_gap = diffs.max()\n"
-            "    is_at_risk = int(max_gap > 35)\n"
-            "    continuity_records.append({\n"
-            "        'investor_id': inv_id,\n"
-            "        'sip_count': len(group),\n"
-            "        'avg_gap_days': avg_gap,\n"
-            "        'max_gap_days': max_gap,\n"
-            "        'is_at_risk': is_at_risk\n"
-            "    })\n"
-            "continuity_df = pd.DataFrame(continuity_records)\n"
-            "at_risk_count = continuity_df['is_at_risk'].sum()\n"
-            "print(f\"Analyzed {len(continuity_df)} investors with >= 6 SIP transactions.\")\n"
-            "print(f\"Flagged {at_risk_count} at-risk investors ({at_risk_count/len(continuity_df):.2%} churn risk).\")\n"
-            "print(continuity_df.head(5).to_string(index=False))"
-        ),
-        nbf.v4.new_markdown_cell(
-            "## 5. Sector Concentration Analysis (HHI)\n\n"
-            "Computes Herfindahl-Hirschman Index (HHI) on portfolio sector weights. Higher HHI indicates a highly concentrated sector profile."
-        ),
-        nbf.v4.new_code_cell(
-            "sector_weights = holdings_df.groupby(['amfi_code', 'sector'])['weight_pct'].sum().reset_index()\n"
-            "hhi_records = []\n"
-            "for code in sector_weights['amfi_code'].unique():\n"
-            "    fund_weights = sector_weights[sector_weights['amfi_code'] == code]['weight_pct']\n"
-            "    ratios = fund_weights / 100.0\n"
-            "    hhi = np.sum(ratios ** 2)\n"
-            "    hhi_records.append({\n"
-            "        'amfi_code': code,\n"
-            "        'sector_hhi': hhi\n"
-            "    })\n"
-            "hhi_df = pd.DataFrame(hhi_records).merge(master_df[['amfi_code', 'scheme_name']], on='amfi_code')\n"
-            "hhi_df = hhi_df.sort_values(by='sector_hhi', ascending=False)\n\n"
-            "print(\"Top 5 Most Concentrated Funds by Sector:\")\n"
-            "print(hhi_df.head(5)[['scheme_name', 'sector_hhi']].to_string(index=False))\n\n"
-            "# Bar plot\n"
-            "plt.figure(figsize=(10, 5))\n"
-            "top_10 = hhi_df.head(10).copy()\n"
-            "top_10['scheme_name'] = top_10['scheme_name'].apply(lambda x: x.split(' - ')[0][:28])\n"
-            "sns.barplot(data=top_10, x='sector_hhi', y='scheme_name', palette='flare', hue='scheme_name', legend=False)\n"
-            "plt.title(\"Top 10 Most Concentrated Funds (Sector HHI Index)\", fontsize=13, fontweight='bold')\n"
-            "plt.xlabel(\"HHI Index\")\n"
-            "plt.ylabel(\"\")\n"
-            "plt.show()"
-        )
-    ]
+    if scorecard_df.empty:
+        logger.warning("Scorecard dataframe is empty. Cannot determine top fund.")
+        return
+        
+    # Get the top scorecard fund
+    top_fund_code = int(scorecard_df.iloc[0]['amfi_code'])
+    top_fund_name = scorecard_df.iloc[0]['scheme_name']
     
-    nb['cells'] = cells
-    with open(NOTEBOOK_PATH, 'w', encoding='utf-8') as f:
-        nbf.write(nb, f)
-    logger.info("Saved notebook file.")
+    fund_navs = nav_df[nav_df['amfi_code'] == top_fund_code].sort_values('date')
+    if fund_navs.empty:
+        logger.warning("No NAV history found for top scorecard fund.")
+        return
+        
+    # Compute daily returns
+    fund_returns = fund_navs['nav'].pct_change().dropna()
+    mu = fund_returns.mean()
+    sigma = fund_returns.std()
+    last_nav = fund_navs.iloc[-1]['nav']
+    
+    # 5 years projection (5 * 252 trading days = 1260 days)
+    n_days = 5 * 252
+    n_sims = 1000
+    
+    # Geometric Brownian Motion
+    drift = mu - 0.5 * (sigma ** 2)
+    rand_shocks = np.random.normal(0, 1, (n_days, n_sims))
+    sim_daily_returns = np.exp(drift + sigma * rand_shocks)
+    
+    paths = np.zeros((n_days + 1, n_sims))
+    paths[0] = last_nav
+    for t in range(1, n_days + 1):
+        paths[t] = paths[t - 1] * sim_daily_returns[t - 1]
+        
+    # Percentiles
+    p5 = np.percentile(paths, 5, axis=1)
+    p25 = np.percentile(paths, 25, axis=1)
+    p50 = np.percentile(paths, 50, axis=1)
+    p75 = np.percentile(paths, 75, axis=1)
+    p95 = np.percentile(paths, 95, axis=1)
+    
+    # Save a CSV of the percentiles over time
+    steps = np.arange(n_days + 1)
+    percentiles_df = pd.DataFrame({
+        'step': steps,
+        'p5': p5,
+        'p25': p25,
+        'p50': p50,
+        'p75': p75,
+        'p95': p95
+    })
+    mc_path = PROCESSED_DIR / "monte_carlo_projections.csv"
+    percentiles_df.to_csv(mc_path, index=False)
+    logger.info("Saved Monte Carlo projections to %s", mc_path)
+    
+    # Save a plot
+    plt.figure(figsize=(10, 6))
+    sns.set_theme(style="whitegrid")
+    
+    plt.plot(steps, p50, label="Median (50th percentile)", color="#4F46E5", linewidth=2)
+    plt.fill_between(steps, p25, p75, color="#6366F1", alpha=0.3, label="Interquartile Range (25th - 75th)")
+    plt.fill_between(steps, p5, p95, color="#6366F1", alpha=0.1, label="90% Confidence Interval (5th - 95th)")
+    
+    plt.title(f"Monte Carlo 5-Year NAV Projection: {top_fund_name.split(' - ')[0]}", fontsize=13, fontweight='bold', pad=15)
+    plt.xlabel("Trading Days")
+    plt.ylabel("Projected NAV (INR)")
+    plt.legend(loc="upper left", frameon=True, shadow=True)
+    plt.tight_layout()
+    
+    mc_chart = CHARTS_DIR / "monte_carlo_simulation.png"
+    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+    plt.savefig(mc_chart, dpi=300)
+    plt.close()
+    logger.info("Saved Monte Carlo simulation chart to %s", mc_chart)
 
-def execute_notebook() -> None:
-    """Execute the notebook in place to populate the output cells."""
-    logger.info("Executing notebook in place...")
-    try:
-        import nbformat
-        from nbconvert.preprocessors import ExecutePreprocessor
+def compute_portfolio_optimization(nav_df: pd.DataFrame, scorecard_df: pd.DataFrame, Rf_annual: float = 0.065) -> None:
+    """B4 - Markowitz Efficient Frontier portfolio optimization for 5 selected funds."""
+    logger.info("Computing Markowitz Efficient Frontier Portfolio Optimization...")
+    
+    if scorecard_df.empty:
+        logger.warning("Scorecard dataframe is empty. Cannot perform portfolio optimization.")
+        return
         
-        with open(NOTEBOOK_PATH, 'r', encoding='utf-8') as f:
-            nb = nbformat.read(f, as_version=4)
-            
-        ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
-        ep.preprocess(nb, {'metadata': {'path': str(NOTEBOOK_PATH.parent)}})
+    # Select top 5 scorecard funds
+    top_5 = scorecard_df.head(5)
+    selected_codes = top_5['amfi_code'].tolist()
+    selected_names = [name.split(" - ")[0] for name in top_5['scheme_name'].tolist()]
+    
+    # Filter 3 year period daily returns
+    start_date = pd.Timestamp("2023-05-29")
+    end_date = pd.Timestamp("2026-05-29")
+    
+    # Build pivoted returns
+    returns_list = []
+    for code, name in zip(selected_codes, selected_names):
+        fund_data = nav_df[(nav_df['amfi_code'] == code) & (nav_df['date'] >= start_date) & (nav_df['date'] <= end_date)].sort_values('date').copy()
+        fund_data['returns'] = fund_data['nav'].pct_change()
+        fund_data = fund_data.dropna(subset=['returns'])
+        fund_data = fund_data.rename(columns={'returns': name})
+        returns_list.append(fund_data[['date', name]])
         
-        with open(NOTEBOOK_PATH, 'w', encoding='utf-8') as f:
-            nbformat.write(nb, f)
+    # Merge returns
+    merged_returns = returns_list[0]
+    for r in returns_list[1:]:
+        merged_returns = pd.merge(merged_returns, r, on='date', how='inner')
+        
+    merged_returns = merged_returns.drop(columns=['date'])
+    
+    # Mean and Covariance
+    mean_daily = merged_returns.mean()
+    cov_daily = merged_returns.cov()
+    
+    # Annualize (252 trading days)
+    ann_returns = mean_daily * 252
+    ann_cov = cov_daily * 252
+    
+    # Monte Carlo simulation of portfolios
+    n_portfolios = 2000
+    results = np.zeros((3 + len(selected_names), n_portfolios))
+    
+    # Seed for deterministic results
+    np.random.seed(42)
+    
+    for i in range(n_portfolios):
+        # Generate random weights
+        weights = np.random.random(len(selected_names))
+        weights /= np.sum(weights)
+        
+        # Portfolio return and volatility
+        p_return = np.sum(weights * ann_returns)
+        p_volatility = np.sqrt(np.dot(weights.T, np.dot(ann_cov, weights)))
+        p_sharpe = (p_return - Rf_annual) / p_volatility
+        
+        results[0, i] = p_return
+        results[1, i] = p_volatility
+        results[2, i] = p_sharpe
+        for j in range(len(weights)):
+            results[3 + j, i] = weights[j]
             
-        logger.info("Notebook executed successfully programmatically.")
-    except Exception as e:
-        logger.error("Notebook execution programmatically failed: %s", e)
+    # Convert results to DataFrame
+    columns = ['Return', 'Volatility', 'Sharpe'] + selected_names
+    results_df = pd.DataFrame(results.T, columns=columns)
+    
+    # Find MSR and MVP portfolios
+    msr_idx = results_df['Sharpe'].idxmax()
+    mvp_idx = results_df['Volatility'].idxmin()
+    
+    msr_portfolio = results_df.iloc[msr_idx]
+    mvp_portfolio = results_df.iloc[mvp_idx]
+    
+    # Save results to CSV
+    opt_path = PROCESSED_DIR / "efficient_frontier_results.csv"
+    results_df.to_csv(opt_path, index=False)
+    logger.info("Saved portfolio optimization results to %s", opt_path)
+    
+    # Save a plot of the Efficient Frontier
+    plt.figure(figsize=(10, 6))
+    sns.set_theme(style="whitegrid")
+    
+    # Plot random portfolios colored by Sharpe
+    sc = plt.scatter(
+        results_df['Volatility'] * 100, 
+        results_df['Return'] * 100, 
+        c=results_df['Sharpe'], 
+        cmap='viridis_r', 
+        marker='o', 
+        s=10, 
+        alpha=0.3
+    )
+    plt.colorbar(sc, label='Sharpe Ratio')
+    
+    # Plot MSR
+    plt.scatter(
+        msr_portfolio['Volatility'] * 100, 
+        msr_portfolio['Return'] * 100, 
+        color='red', 
+        marker='*', 
+        s=200, 
+        label='Max Sharpe Ratio Portfolio'
+    )
+    
+    # Plot MVP
+    plt.scatter(
+        mvp_portfolio['Volatility'] * 100, 
+        mvp_portfolio['Return'] * 100, 
+        color='blue', 
+        marker='*', 
+        s=200, 
+        label='Minimum Variance Portfolio'
+    )
+    
+    plt.title("Markowitz Efficient Frontier (Top 5 Scorecard Funds)", fontsize=13, fontweight='bold', pad=15)
+    plt.xlabel("Annualized Volatility / Risk (%)")
+    plt.ylabel("Annualized Expected Return (%)")
+    plt.legend(loc="upper left", frameon=True, shadow=True)
+    plt.tight_layout()
+    
+    ef_chart = CHARTS_DIR / "efficient_frontier.png"
+    plt.savefig(ef_chart, dpi=300)
+    plt.close()
+    logger.info("Saved Efficient Frontier chart to %s", ef_chart)
 
 def main() -> None:
-    nav_df, tx_df, holdings_df, master_df = load_data()
+    nav_df, tx_df, holdings_df, master_df, scorecard_df = load_data()
     
     # Run computations
     compute_var_cvar(nav_df, master_df)
@@ -471,9 +484,9 @@ def main() -> None:
     sip_continuation_analysis(tx_df)
     sector_concentration_analysis(holdings_df, master_df)
     
-    # Generate and execute Jupyter notebook
-    generate_notebook()
-    execute_notebook()
+    # Run B3 and B4 computations
+    compute_monte_carlo(nav_df, scorecard_df)
+    compute_portfolio_optimization(nav_df, scorecard_df)
     
     logger.info("Day 6 - Advanced Analytics run completed successfully!")
 

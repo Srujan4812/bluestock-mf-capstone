@@ -3,7 +3,7 @@ DAY 2 VALIDATION REPORT
 
 [Row counts: DB vs cleaned CSV]
   fund_master              csv=40     db=40     OK
-  nav_history              csv=46000  db=46000  OK
+  nav_history              csv=64320  db=64320  OK
   aum_by_fund_house        csv=90     db=90     OK
   monthly_sip_inflows      csv=48     db=48     OK
   category_inflows         csv=144    db=144    OK

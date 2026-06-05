@@ -140,7 +140,7 @@ def load_csv_data(filename):
 
 @contextlib.contextmanager
 def get_db_connection():
-    db_path = PROCESSED_DIR / "bluestock.db"
+    db_path = ROOT_DIR / "data" / "db" / "bluestock_mf.db"
     conn = sqlite3.connect(db_path)
     try:
         yield conn
@@ -163,7 +163,7 @@ st.sidebar.markdown("---")
 # Page Selector
 page = st.sidebar.radio(
     "NAVIGATION HUB",
-    ["Industry Overview", "Fund Performance", "Investor Analytics", "SIP & Market Trends"],
+    ["Industry Overview", "Fund Performance", "Investor Analytics", "SIP & Market Trends", "Monte Carlo Projections", "Portfolio Optimization"],
     key="nav_radio"
 )
 
@@ -835,3 +835,230 @@ elif page == "SIP & Market Trends":
             fig_heat = update_plotly_theme(fig_heat)
             st.plotly_chart(fig_heat, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------- PAGE 5: MONTE CARLO PROJECTIONS -----------------
+elif page == "Monte Carlo Projections":
+    st.markdown("<h1 class='gradient-header'>🎲 Monte Carlo Simulation & NAV Projections</h1>", unsafe_allow_html=True)
+    st.markdown("Project future price paths over 5 years (1,260 trading days) using Geometric Brownian Motion simulations.")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='premium-card'>", unsafe_allow_html=True)
+    st.subheader("Select Scheme & Simulation Configuration")
+    
+    selected_scheme = st.selectbox(
+        "Select a Scheme to Project", 
+        options=scorecard['scheme_name'].sort_values().unique(), 
+        key="mc_scheme_select"
+    )
+    
+    col_sim1, col_sim2 = st.columns(2)
+    with col_sim1:
+        n_sims = st.slider("Number of Simulations", min_value=100, max_value=2000, value=1000, step=100)
+    with col_sim2:
+        n_years = st.slider("Projection Horizon (Years)", min_value=1, max_value=10, value=5, step=1)
+        
+    if selected_scheme:
+        fund_row = scorecard[scorecard['scheme_name'] == selected_scheme].iloc[0]
+        code = int(fund_row['amfi_code'])
+        
+        try:
+            with get_db_connection() as conn:
+                fund_nav = pd.read_sql("SELECT date, nav FROM nav_history WHERE amfi_code = ? ORDER BY date", conn, params=(code,))
+                fund_nav['date'] = pd.to_datetime(fund_nav['date'])
+                
+            if not fund_nav.empty:
+                # Calculate daily return parameters
+                fund_nav['returns'] = fund_nav['nav'].pct_change()
+                returns = fund_nav['returns'].dropna()
+                
+                mu = returns.mean()
+                sigma = returns.std()
+                last_nav = fund_nav.iloc[-1]['nav']
+                
+                # Parameters
+                n_days = n_years * 252
+                drift = mu - 0.5 * (sigma ** 2)
+                
+                # Run simulations
+                np.random.seed(42)
+                rand_shocks = np.random.normal(0, 1, (n_days, n_sims))
+                sim_daily_returns = np.exp(drift + sigma * rand_shocks)
+                
+                paths = np.zeros((n_days + 1, n_sims))
+                paths[0] = last_nav
+                for t in range(1, n_days + 1):
+                    paths[t] = paths[t - 1] * sim_daily_returns[t - 1]
+                    
+                # Compute percentiles
+                steps = np.arange(n_days + 1)
+                p5 = np.percentile(paths, 5, axis=1)
+                p25 = np.percentile(paths, 25, axis=1)
+                p50 = np.percentile(paths, 50, axis=1)
+                p75 = np.percentile(paths, 75, axis=1)
+                p95 = np.percentile(paths, 95, axis=1)
+                
+                # Plotly figure
+                fig_mc = go.Figure()
+                fig_mc.add_trace(go.Scatter(x=steps, y=p50, name="Median (50th %)", line=dict(color="#6366F1", width=3)))
+                fig_mc.add_trace(go.Scatter(x=steps, y=p75, name="75th Percentile", line=dict(color="#10B981", width=1.5, dash='dash')))
+                fig_mc.add_trace(go.Scatter(x=steps, y=p25, name="25th Percentile", line=dict(color="#F59E0B", width=1.5, dash='dash')))
+                fig_mc.add_trace(go.Scatter(x=steps, y=p95, name="95th Percentile (Upper Bound)", line=dict(color="#A78BFA", width=1, dash='dot')))
+                fig_mc.add_trace(go.Scatter(x=steps, y=p5, name="5th Percentile (Lower Bound)", line=dict(color="#EF4444", width=1, dash='dot')))
+                
+                fig_mc.update_layout(
+                    title=f"Monte Carlo {n_years}-Year Projection for {selected_scheme.split(' - ')[0]} (Start NAV: ₹{last_nav:.2f})",
+                    xaxis_title="Trading Days",
+                    yaxis_title="Projected NAV (INR)",
+                    template="plotly_dark"
+                )
+                fig_mc = update_plotly_theme(fig_mc)
+                st.plotly_chart(fig_mc, use_container_width=True)
+                
+                # Show summary statistics
+                mcol1, mcol2, mcol3, mcol4 = st.columns(4)
+                
+                final_median = p50[-1]
+                expected_growth = (final_median / last_nav - 1) * 100
+                ann_cagr = ((final_median / last_nav) ** (1.0 / n_years) - 1) * 100
+                prob_positive = (paths[-1] > last_nav).mean() * 100
+                
+                with mcol1:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Current NAV</div>
+                        <div class="kpi-value">₹{last_nav:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with mcol2:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Projected Median NAV</div>
+                        <div class="kpi-value">₹{final_median:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with mcol3:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Projected Ann. CAGR</div>
+                        <div class="kpi-value" style="color: #10B981;">{ann_cagr:.2f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with mcol4:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Prob. of Positive Return</div>
+                        <div class="kpi-value" style="color: #6366F1;">{prob_positive:.1f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.error("No NAV history available for this scheme.")
+        except Exception as e:
+            st.error(f"Error executing Monte Carlo simulation: {e}")
+            
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------- PAGE 6: PORTFOLIO OPTIMIZATION -----------------
+elif page == "Portfolio Optimization":
+    st.markdown("<h1 class='gradient-header'>📊 Markowitz Efficient Frontier Portfolio Optimization</h1>", unsafe_allow_html=True)
+    st.markdown("Simulate optimal asset allocations among our top-performing mutual funds using Modern Portfolio Theory (MPT).")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Check if results exist, otherwise compute or show error
+    ef_path = PROCESSED_DIR / "efficient_frontier_results.csv"
+    if ef_path.exists():
+        results_df = pd.read_csv(ef_path)
+        
+        # Load top 5 names dynamically
+        selected_names = [col for col in results_df.columns if col not in ['Return', 'Volatility', 'Sharpe']]
+        
+        # MSR and MVP portfolios
+        msr = results_df.iloc[results_df['Sharpe'].idxmax()]
+        mvp = results_df.iloc[results_df['Volatility'].idxmin()]
+        
+        col_ef_chart, col_ef_alloc = st.columns([6, 4])
+        
+        with col_ef_chart:
+            st.markdown("<div class='premium-card'>", unsafe_allow_html=True)
+            st.subheader("Efficient Frontier Scatter Plot")
+            
+            # Interactive plot with plotly
+            fig_ef = px.scatter(
+                results_df,
+                x="Volatility",
+                y="Return",
+                color="Sharpe",
+                color_continuous_scale="viridis_r",
+                labels={"Volatility": "Annualized Volatility (Risk)", "Return": "Expected Annual Return", "Sharpe": "Sharpe Ratio"},
+                template="plotly_dark",
+                hover_data={n: ":.2f" for n in selected_names}
+            )
+            
+            # Add MSR marker
+            fig_ef.add_trace(go.Scatter(
+                x=[msr['Volatility']],
+                y=[msr['Return']],
+                mode='markers',
+                marker=dict(color='red', size=15, symbol='star'),
+                name='Max Sharpe Ratio (MSR)',
+                showlegend=True
+            ))
+            
+            # Add MVP marker
+            fig_ef.add_trace(go.Scatter(
+                x=[mvp['Volatility']],
+                y=[mvp['Return']],
+                mode='markers',
+                marker=dict(color='blue', size=15, symbol='star'),
+                name='Min Variance (MVP)',
+                showlegend=True
+            ))
+            
+            fig_ef = update_plotly_theme(fig_ef)
+            st.plotly_chart(fig_ef, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with col_ef_alloc:
+            st.markdown("<div class='premium-card' style='height: 100%;'>", unsafe_allow_html=True)
+            st.subheader("💡 Optimal Allocations")
+            
+            portfolio_choice = st.radio("Select Allocation Model", ["Maximum Sharpe Ratio (MSR)", "Minimum Variance Portfolio (MVP)"])
+            
+            target_port = msr if portfolio_choice == "Maximum Sharpe Ratio (MSR)" else mvp
+            color_theme = "#10B981" if portfolio_choice == "Maximum Sharpe Ratio (MSR)" else "#6366F1"
+            
+            st.markdown(f"""
+            <div style="background-color: rgba(30, 41, 59, 0.6); padding: 15px; border-radius: 8px; border-left: 5px solid {color_theme}; margin-bottom: 20px;">
+                <div style="font-size: 13px; color: #94A3B8;">EXPECTED PORTFOLIO RETURN</div>
+                <div style="font-size: 28px; font-weight: bold; color: white;">{target_port['Return'] * 100:.2f}%</div>
+                <div style="font-size: 12px; color: #94A3B8; margin-top: 10px; display: flex; justify-content: space-between;">
+                    <span>Volatility: <b>{target_port['Volatility'] * 100:.2f}%</b></span>
+                    <span>Sharpe: <b>{target_port['Sharpe']:.2f}</b></span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("##### Portfolio Weights Allocation")
+            weights_data = []
+            for name in selected_names:
+                weights_data.append({
+                    "Scheme / Fund": name,
+                    "Allocation Weight (%)": f"{target_port[name] * 100:.2f}%"
+                })
+            st.table(pd.DataFrame(weights_data))
+            
+            # Pie Chart
+            fig_pie = px.pie(
+                values=[target_port[name] for name in selected_names],
+                names=selected_names,
+                hole=0.4,
+                color_discrete_sequence=px.colors.sequential.Purples_r,
+                template="plotly_dark"
+            )
+            fig_pie = update_plotly_theme(fig_pie)
+            fig_pie.update_layout(margin=dict(l=20, r=20, t=20, b=20), legend=dict(orientation="h", y=-0.1))
+            st.plotly_chart(fig_pie, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+    else:
+        st.info("Efficient Frontier results have not been generated yet. Please run advanced_analytics.py first.")
+

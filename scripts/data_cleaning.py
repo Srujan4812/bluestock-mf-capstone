@@ -89,6 +89,22 @@ def clean_frame(name: str, df: pd.DataFrame) -> pd.DataFrame:
             df[col] = pd.to_datetime(df[col], errors="coerce").dt.strftime("%Y-%m-%d")
 
     if name == "nav_history":
+        # Handle weekends/holidays in NAV: reindex each group to full calendar daily range and ffill()
+        df['date'] = pd.to_datetime(df['date'])
+        min_date = df['date'].min()
+        max_date = df['date'].max()
+        full_date_range = pd.date_range(start=min_date, end=max_date, freq='D')
+        
+        reindexed_dfs = []
+        for code, group in df.groupby('amfi_code'):
+            group_reindexed = group.set_index('date').reindex(full_date_range)
+            group_reindexed['amfi_code'] = code
+            group_reindexed['nav'] = group_reindexed['nav'].ffill()
+            group_reindexed = group_reindexed.reset_index().rename(columns={'index': 'date'})
+            reindexed_dfs.append(group_reindexed)
+            
+        df = pd.concat(reindexed_dfs, ignore_index=True)
+        df['date'] = df['date'].dt.strftime("%Y-%m-%d")
         df = df.sort_values(["amfi_code", "date"]).reset_index(drop=True)
 
     logger.info("%s: %d -> %d rows (removed %d)", name, start, len(df), start - len(df))

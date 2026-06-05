@@ -12,6 +12,8 @@ env/
 # Data (keep structure via .gitkeep, ignore bulk/generated data)
 data/processed/*
 !data/processed/.gitkeep
+data/db/*
+!data/db/.gitkeep
 logs/*
 !logs/.gitkeep
 reports/*

@@ -29,7 +29,7 @@ import seaborn as sns
 sys.path.append(str(Path(__file__).resolve().parent))
 from _common import PROCESSED_DIR, REPORTS_DIR, get_logger
 
-logger = get_logger("performance_analytics")
+logger = get_logger("compute_metrics")
 
 # Output Paths
 SCORECARD_PATH = PROCESSED_DIR / "fund_scorecard.csv"
@@ -263,10 +263,6 @@ def generate_benchmark_comparison_chart(
     plt.figure(figsize=(12, 7))
     sns.set_theme(style="whitegrid")
     
-    # Normalized NAV plot data
-    # Normalizing so 2023-05-29 = 100
-    dates = nav_df[(nav_df['amfi_code'] == top_5_codes[0]) & (nav_df['date'] >= start_date) & (nav_df['date'] <= end_date)]['date'].values
-    
     # tracking error calculations store
     tracking_errors = {}
     
@@ -339,7 +335,7 @@ def main() -> None:
     scorecard_df = build_scorecard(master_df, cagr_df, ratios_df, alpha_beta_df, drawdown_df)
     
     # Save Outputs
-    # Save fund_scorecard.csv
+    SCORECARD_PATH.parent.mkdir(parents=True, exist_ok=True)
     scorecard_df[[
         'amfi_code', 'scheme_name', 'cagr_3yr_pct', 'sharpe_ratio', 'alpha',
         'expense_ratio_pct', 'max_drawdown_pct', 'score', 'scorecard_rank',

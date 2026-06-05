@@ -245,7 +245,7 @@ def main() -> None:
     # ==========================================
     story.append(Paragraph("3. Relational SQL Schema & Database Design", h1_style))
     story.append(Paragraph(
-        "To enable analytical queries, all clean CSV datasets were loaded into a normalized SQLite relational database (<code>bluestock.db</code>) using a structured star schema.",
+        "To enable analytical queries, all clean CSV datasets were loaded into a normalized SQLite relational database (<code>bluestock_mf.db</code>) using a structured star schema.",
         body_style
     ))
     story.append(Paragraph("Star Schema Table Structures:", h2_style))

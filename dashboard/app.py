@@ -126,9 +126,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Path definitions
 ROOT_DIR = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"
+
+# Check and dynamically generate processed data files if missing (e.g., when deployed to Streamlit Cloud)
+required_files = [
+    "clean_fund_master.csv", 
+    "fund_scorecard.csv", 
+    "alpha_beta.csv", 
+    "var_cvar_report.csv", 
+    "sector_hhi.csv", 
+    "cohort_analysis.csv"
+]
+missing_files = [f for f in required_files if not (PROCESSED_DIR / f).exists()]
+if missing_files:
+    import subprocess
+    import sys
+    
+    # Ensure directories exist
+    (ROOT_DIR / "data" / "db").mkdir(parents=True, exist_ok=True)
+    (ROOT_DIR / "reports" / "charts").mkdir(parents=True, exist_ok=True)
+    
+    # Run pipelines to generate database & clean outputs
+    scripts = ["etl_pipeline.py", "compute_metrics.py", "advanced_analytics.py"]
+    for script_name in scripts:
+        script_path = ROOT_DIR / "scripts" / script_name
+        subprocess.run([sys.executable, str(script_path)], cwd=str(ROOT_DIR), check=True)
 
 # Helper function to load cleaned CSVs
 @st.cache_data

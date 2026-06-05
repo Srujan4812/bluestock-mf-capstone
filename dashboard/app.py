@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import sqlite3
+import contextlib
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
@@ -136,6 +137,15 @@ def load_csv_data(filename):
     if path.exists():
         return pd.read_csv(path)
     return pd.DataFrame()
+
+@contextlib.contextmanager
+def get_db_connection():
+    db_path = PROCESSED_DIR / "bluestock.db"
+    conn = sqlite3.connect(db_path)
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 # Load common datasets
 fund_master = load_csv_data("clean_fund_master.csv")
@@ -303,6 +313,49 @@ elif page == "Fund Performance":
     st.markdown("Analyze mutual fund returns on a risk-adjusted basis, evaluate tracking errors against benchmarks, and discover top recommendation models.")
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # Dynamic top-level KPIs computed from scorecard
+    if not scorecard.empty:
+        top_cagr_row = scorecard.loc[scorecard['cagr_3yr_pct'].idxmax()]
+        top_sharpe_row = scorecard.loc[scorecard['sharpe_ratio'].idxmax()]
+        top_alpha_row = scorecard.loc[scorecard['alpha'].idxmax()]
+        lowest_exp_row = scorecard.loc[scorecard['expense_ratio_pct'].idxmin()]
+        
+        kcol1, kcol2, kcol3, kcol4 = st.columns(4)
+        with kcol1:
+            st.markdown(f"""
+            <div class="kpi-container">
+                <div class="kpi-title">Top CAGR Return</div>
+                <div class="kpi-value">{top_cagr_row['cagr_3yr_pct']:.1f}%</div>
+                <div class="kpi-delta" style="color: #10B981;">🏆 {top_cagr_row['scheme_name'].split(" - ")[0][:28]}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kcol2:
+            st.markdown(f"""
+            <div class="kpi-container">
+                <div class="kpi-title">Highest Sharpe Ratio</div>
+                <div class="kpi-value">{top_sharpe_row['sharpe_ratio']:.2f}</div>
+                <div class="kpi-delta" style="color: #6366F1;">💎 {top_sharpe_row['scheme_name'].split(" - ")[0][:28]}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kcol3:
+            st.markdown(f"""
+            <div class="kpi-container">
+                <div class="kpi-title">Max Alpha (vs Bench)</div>
+                <div class="kpi-value">+{top_alpha_row['alpha']:.1f}%</div>
+                <div class="kpi-delta" style="color: #10B981;">⚡ {top_alpha_row['scheme_name'].split(" - ")[0][:28]}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kcol4:
+            st.markdown(f"""
+            <div class="kpi-container">
+                <div class="kpi-title">Lowest Expense Ratio</div>
+                <div class="kpi-value">{lowest_exp_row['expense_ratio_pct']:.2f}%</div>
+                <div class="kpi-delta" style="color: #6366F1;">🌿 {lowest_exp_row['scheme_name'].split(" - ")[0][:28]}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # Interactive Sidebar Filters
     st.sidebar.markdown("### FILTER CONTROLS")
     selected_amcs = st.sidebar.multiselect("Select AMC / Fund Houses", options=fund_master['fund_house'].unique())
@@ -331,22 +384,32 @@ elif page == "Fund Performance":
         
         # Merge std_dev_ann_pct and category
         plot_data = filtered_scorecard.merge(fund_master[['amfi_code', 'category', 'fund_house']], on='amfi_code')
-        if not scheme_perf.empty:
+        if 'std_dev_ann_pct' not in plot_data.columns and not scheme_perf.empty:
             plot_data = plot_data.merge(scheme_perf[['amfi_code', 'std_dev_ann_pct']], on='amfi_code')
             
         if not plot_data.empty:
+            # Map size parameter safely (clip at minimum to prevent Plotly errors on negative Sharpe Ratios)
+            plot_data['sharpe_ratio_size'] = plot_data['sharpe_ratio'].clip(lower=0.1) * 10 + 5
+            
             fig_scatter = px.scatter(
                 plot_data,
                 x="cagr_3yr_pct",
                 y="std_dev_ann_pct",
                 color="category",
                 hover_name="scheme_name",
-                size="sharpe_ratio",
+                size="sharpe_ratio_size",
                 color_discrete_sequence=px.colors.qualitative.Bold,
                 labels={
                     "cagr_3yr_pct": "3-Year CAGR Return (%)",
                     "std_dev_ann_pct": "Annualized Standard Deviation (%)",
                     "sharpe_ratio": "Sharpe Ratio"
+                },
+                hover_data={
+                    "cagr_3yr_pct": ":.2f",
+                    "std_dev_ann_pct": ":.2f",
+                    "sharpe_ratio": ":.2f",
+                    "alpha": ":.2f",
+                    "sharpe_ratio_size": False
                 },
                 template="plotly_dark"
             )
@@ -419,7 +482,7 @@ elif page == "Fund Performance":
             'Expense Ratio (%)': '{:.2f}%',
             'Max Drawdown (%)': '{:.2f}%',
             'Composite Score': '{:.2f}'
-        }), use_container_width=True, hide_index=True)
+        }).background_gradient(subset=['Composite Score'], cmap='Purples'), use_container_width=True, hide_index=True)
     st.markdown("</div>", unsafe_allow_html=True)
     
     # Fund Detail & Benchmark comparison
@@ -457,12 +520,50 @@ elif page == "Fund Performance":
                 fig_nav = update_plotly_theme(fig_nav)
                 st.plotly_chart(fig_nav, use_container_width=True)
                 
-                # Show key stats
-                kcol1, kcol2, kcol3, kcol4 = st.columns(4)
-                kcol1.metric("3Yr CAGR Return", f"{fund_row['cagr_3yr_pct']:.2f}%")
-                kcol2.metric("Sharpe Ratio", f"{fund_row['sharpe_ratio']:.2f}")
-                kcol3.metric("Alpha (vs Nifty 100)", f"{fund_row['alpha']:.2f}%")
-                kcol4.metric("Maximum Drawdown", f"{fund_row['max_drawdown_pct']:.2f}%")
+                # Fetch beta dynamically
+                beta_val = "N/A"
+                if not alpha_beta.empty:
+                    ab_row = alpha_beta[alpha_beta['amfi_code'] == code]
+                    if not ab_row.empty:
+                        beta_val = f"{ab_row.iloc[0]['beta']:.2f}"
+                
+                # Show key stats in glassmorphic cards
+                scol1, scol2, scol3, scol4, scol5 = st.columns(5)
+                with scol1:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">3Yr CAGR</div>
+                        <div class="kpi-value" style="font-size: 24px; color: #10B981;">{fund_row['cagr_3yr_pct']:.2f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with scol2:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Sharpe Ratio</div>
+                        <div class="kpi-value" style="font-size: 24px; color: #6366F1;">{fund_row['sharpe_ratio']:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with scol3:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Alpha (vs Nifty 100)</div>
+                        <div class="kpi-value" style="font-size: 24px; color: #10B981;">{fund_row['alpha']:.2f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with scol4:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Beta (vs Nifty 100)</div>
+                        <div class="kpi-value" style="font-size: 24px; color: #F59E0B;">{beta_val}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with scol5:
+                    st.markdown(f"""
+                    <div class="kpi-container">
+                        <div class="kpi-title">Max Drawdown</div>
+                        <div class="kpi-value" style="font-size: 24px; color: #EF4444;">{fund_row['max_drawdown_pct']:.2f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error loading comparison chart: {e}")
     st.markdown("</div>", unsafe_allow_html=True)
@@ -498,6 +599,31 @@ elif page == "Fund Performance":
                 'Sector HHI Index': '{:.4f}'
             }), use_container_width=True, hide_index=True)
         st.markdown("</div>", unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Financial Glossary & Formula Guide
+    with st.expander("📚 Financial Metrics Glossary & Reference Guide"):
+        st.markdown("""
+        ### Understanding Risk & Return Metrics
+        To help you evaluate mutual funds on our platform, here is a breakdown of the key mathematical formulas and terminology used:
+        
+        *   **CAGR (Compound Annual Growth Rate)**: The geometric progression ratio that provides a constant rate of return over the 3-year time period.
+            $$\\text{CAGR} = \\left( \\frac{\\text{End NAV}}{\\text{Start NAV}} \\right)^{\\frac{1}{3}} - 1$$
+        *   **Standard Deviation (Volatility)**: Annualized standard deviation of daily returns, indicating historical fund dispersion. Higher values denote higher pricing instability.
+            $$\\sigma_{\\text{ann}} = \\sigma_{\\text{daily}} \\times \\sqrt{252} \\times 100$$
+        *   **Sharpe Ratio**: A measure of risk-adjusted excess return per unit of volatility (assuming a risk-free rate $R_f = 6.5\\%$).
+            $$\\text{Sharpe} = \\frac{R_p - R_f}{\\sigma_p}$$
+        *   **Alpha (OLS Jensen's Alpha)**: The return of the fund in excess of the Nifty 100 index return, after adjusting for market beta risk. Shows fund manager value-add.
+            $$\\alpha = R_p - [R_f + \\beta_p (R_m - R_f)]$$
+        *   **Beta**: The systematic risk coefficient representing a fund's volatility relative to the broader market index (Nifty 100).
+        *   **Max Drawdown**: The maximum peak-to-trough drop in a fund's NAV, highlighting historical capital downside vulnerability.
+        *   **Value at Risk (VaR 95%)**: The daily potential portfolio loss that will not be exceeded with 95% statistical confidence.
+        *   **Conditional Value at Risk (CVaR 95%)**: The expected loss on days where the VaR threshold is breached (extreme tail loss).
+        *   **Sector HHI (Herfindahl-Hirschman Index)**: Measures portfolio concentration across SEBI sectors.
+            $$\\text{HHI} = \\sum_{i=1}^{n} s_i^2$$
+            *(where $s_i$ is the percentage share of sector $i$. HHI < 0.15 is highly diversified; > 0.25 is concentrated).*
+        """, unsafe_allow_html=True)
 
 # ----------------- PAGE 3: INVESTOR ANALYTICS -----------------
 elif page == "Investor Analytics":

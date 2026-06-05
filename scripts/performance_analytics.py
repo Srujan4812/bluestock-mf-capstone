@@ -342,7 +342,8 @@ def main() -> None:
     # Save fund_scorecard.csv
     scorecard_df[[
         'amfi_code', 'scheme_name', 'cagr_3yr_pct', 'sharpe_ratio', 'alpha',
-        'expense_ratio_pct', 'max_drawdown_pct', 'score', 'scorecard_rank'
+        'expense_ratio_pct', 'max_drawdown_pct', 'score', 'scorecard_rank',
+        'std_dev_ann_pct'
     ]].to_csv(SCORECARD_PATH, index=False)
     logger.info("Saved scorecard to %s", SCORECARD_PATH)
     

@@ -146,7 +146,9 @@ def generate_page2():
     # 1. Scatter Plot (Top Left)
     ax_scatter = fig.add_subplot(gs[0, 0])
     perf_df = pd.read_csv(PROCESSED_DIR / "clean_scheme_performance.csv")
-    plot_data = scorecard.merge(perf_df[['amfi_code', 'std_dev_ann_pct']], on='amfi_code')
+    plot_data = scorecard.copy()
+    if 'std_dev_ann_pct' not in plot_data.columns:
+        plot_data = plot_data.merge(perf_df[['amfi_code', 'std_dev_ann_pct']], on='amfi_code')
     plot_data = plot_data.merge(master_df[['amfi_code', 'category']], on='amfi_code')
     sns.scatterplot(
         data=plot_data,

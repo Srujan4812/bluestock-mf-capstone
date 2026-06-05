@@ -1,0 +1,27 @@
+DAY 2 VALIDATION REPORT
+========================================
+
+[Row counts: DB vs cleaned CSV]
+  fund_master              csv=40     db=40     OK
+  nav_history              csv=46000  db=46000  OK
+  aum_by_fund_house        csv=90     db=90     OK
+  monthly_sip_inflows      csv=48     db=48     OK
+  category_inflows         csv=144    db=144    OK
+  industry_folio_count     csv=21     db=21     OK
+  scheme_performance       csv=40     db=40     OK
+  investor_transactions    csv=32778  db=32778  OK
+  portfolio_holdings       csv=322    db=322    OK
+  benchmark_indices        csv=8050   db=8050   OK
+
+[Foreign key integrity]
+  foreign_key_check violations: 0
+  nav_history              orphan amfi_code: 0
+  scheme_performance       orphan amfi_code: 0
+  investor_transactions    orphan amfi_code: 0
+  portfolio_holdings       orphan amfi_code: 0
+
+[Value sanity checks]
+  non-positive NAV rows:        0
+  non-positive amount rows:     0
+
+ALL CHECKS PASSED

@@ -16,6 +16,12 @@ logs/*
 !logs/.gitkeep
 reports/*
 !reports/.gitkeep
+!reports/*.pdf
+!reports/*.pptx
+!reports/*.txt
+!reports/*.md
+!reports/charts/
+!reports/charts/*.png
 
 # Notebooks
 .ipynb_checkpoints/

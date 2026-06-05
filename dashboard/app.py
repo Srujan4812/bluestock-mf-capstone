@@ -66,7 +66,7 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
 </style>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True)
 
 # Path definitions
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -91,8 +91,8 @@ scorecard = load_csv_data("fund_scorecard.csv")
 alpha_beta = load_csv_data("alpha_beta.csv")
 
 # Sidebar Logo & Title
-st.sidebar.markdown("<h2 style='text-align: center; color: #6366F1;'>BLUESTOCK</h2>", unsafe_allowed_html=True)
-st.sidebar.markdown("<p style='text-align: center; color: #94A3B8; font-size: 12px;'>MF Analytics Platform</p>", unsafe_allowed_html=True)
+st.sidebar.markdown("<h2 style='text-align: center; color: #6366F1;'>BLUESTOCK</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; color: #94A3B8; font-size: 12px;'>MF Analytics Platform</p>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
 # Page Selector
@@ -125,7 +125,7 @@ if page == "Industry Overview":
             <div class="metric-value">₹81.0 L Cr</div>
             <div class="metric-delta">As of Dec 2025</div>
         </div>
-        """, unsafe_allowed_html=True)
+        """, unsafe_allow_html=True)
     with col2:
         val = f"₹{latest_sip['sip_inflow_crore']:,.0f} Cr" if latest_sip is not None else "₹31,002 Cr"
         st.markdown(f"""
@@ -134,7 +134,7 @@ if page == "Industry Overview":
             <div class="metric-value">{val}</div>
             <div class="metric-delta">₹31,002 Cr Milestone</div>
         </div>
-        """, unsafe_allowed_html=True)
+        """, unsafe_allow_html=True)
     with col3:
         val = f"{latest_folio['total_folios_crore']:.2f} Cr" if latest_folio is not None else "26.12 Cr"
         st.markdown(f"""
@@ -143,7 +143,7 @@ if page == "Industry Overview":
             <div class="metric-value">{val}</div>
             <div class="metric-delta">Equity: 78% Share</div>
         </div>
-        """, unsafe_allowed_html=True)
+        """, unsafe_allow_html=True)
     with col4:
         val = f"{latest_sip['active_sip_accounts_crore']:.2f} Cr" if latest_sip is not None else "9.35 Cr"
         st.markdown(f"""
@@ -152,9 +152,9 @@ if page == "Industry Overview":
             <div class="metric-value">{val}</div>
             <div class="metric-delta">YoY Growth: +18.4%</div>
         </div>
-        """, unsafe_allowed_html=True)
+        """, unsafe_allow_html=True)
         
-    st.markdown("<br>", unsafe_allowed_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # Industry AUM Growth Trend
     st.subheader("Industry Assets Under Management (AUM) Growth Trend")

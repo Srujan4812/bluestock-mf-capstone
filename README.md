@@ -22,15 +22,18 @@ This repository contains the complete implementation for the **Bluestock Mutual 
 bluestock_mf_capstone/
 ├── data/
 │   ├── raw/                 # Original flat CSV datasets (87K+ transaction rows)
-│   └── processed/           # Cleansed CSVs, bluestock.db, fund_scorecard.csv, etc.
+│   ├── processed/           # Cleansed, normalized CSV outputs
+│   └── db/                  # Star schema SQLite database (bluestock_mf.db - ignored by git)
 ├── sql/
 │   ├── schema.sql           # SQLite Star Schema DDL definitions
 │   ├── star_schema.sql      # Star Schema documentation/references
 │   └── queries.sql          # 11 validation and analytical SQL queries
 ├── notebooks/
-│   ├── EDA_Analysis.ipynb          # Day 3 Exploratory Data Analysis
-│   ├── Performance_Analytics.ipynb # Day 4 Return & Performance calculations
-│   └── Advanced_Analytics.ipynb    # Day 6 Risk, Cohort & Concentration reports
+│   ├── 01_data_ingestion.ipynb    # Day 1 Data Ingestion & Profiling
+│   ├── 02_data_cleaning.ipynb     # Day 2 Data Cleaning & Standardisation
+│   ├── 03_eda_analysis.ipynb      # Day 3 Exploratory Data Analysis (EDA)
+│   ├── 04_performance_analytics.ipynb # Day 4 Return & Performance calculations
+│   └── 05_advanced_analytics.ipynb    # Day 6 Risk, Monte Carlo & Portfolio optimization
 ├── dashboard/
 │   └── app.py               # Day 5 Multi-page Interactive Streamlit Application
 ├── reports/
@@ -38,21 +41,26 @@ bluestock_mf_capstone/
 │   ├── data_dictionary.md   # Mapping of tables, data types, and primary/foreign keys
 │   ├── data_quality_report.txt     # Day 1 Data Ingestion Profile
 │   ├── day2_validation_report.txt  # Day 2 DB Schema Validation Report
-│   ├── day4_performance_report.txt # Day 4 Performance Stats & Rankings
+│   ├── day4_performance_report.txt # Day 4 Performance Stats & Scorecard rankings
 │   ├── Dashboard.pdf        # Day 5 Landscaped Dashboard mockup PDF
-│   └── Final_Report.pdf     # Day 7 Comprehensive 16-page Executive Report
+│   ├── Final_Report.pdf     # Day 7 Comprehensive Executive Report
+│   └── Presentation.pptx    # Day 7 PowerPoint Presentation Slide Deck
 ├── scripts/
 │   ├── _common.py            # Logger & shared Path configs
-│   ├── data_ingestion.py     # Day 1 Raw data ingestion
-│   ├── live_nav_fetch.py     # Day 1 Live NAV mfapi.in API fetcher
-│   ├── data_cleaning.py      # Day 2 Programmatic Pandas cleaning
-│   ├── build_database.py     # Day 2 SQLite database builder & validation
-│   ├── performance_analytics.py # Day 4 CAGR, Sharpe, Sortino, Alpha/Beta computation
-│   ├── advanced_analytics.py # Day 6 VaR, Cohort, Churn, HHI calculation & Jupyter builder
-│   ├── recommender.py        # Day 6 Risk-appetite rule-based recommender model
-│   ├── export_dashboard.py   # Day 5 Programmatic dashboard screen exporter
-│   ├── generate_presentation.py # Day 7 PowerPoint Slide Deck compiler
-│   └── generate_final_report.py # Day 7 Executive PDF report compiler (ReportLab)
+│   ├── etl_pipeline.py       # Master Ingestion, Cleaning & SQLite Loader
+│   ├── data_ingestion.py     # Raw data ingestion profile logic
+│   ├── live_nav_fetch.py     # Live NAV mfapi.in API fetcher script
+│   ├── data_cleaning.py      # Programmatic Pandas data cleaning logic
+│   ├── build_database.py     # SQLite database builder & validation checks
+│   ├── compute_metrics.py    # Return calculations, Sharpe, Sortino, Alpha & Beta
+│   ├── advanced_analytics.py # VaR, Cohorts, Churn, HHI, Monte Carlo & Markowitz Optimization
+│   ├── recommender.py        # Rule-based risk-appetite mutual fund recommender
+│   ├── email_report.py       # B5 automated HTML performance email report generator
+│   ├── schedule_etl.py       # B1 weekday 8 PM daemon ETL scheduler script
+│   ├── generate_all_notebooks.py # Programmatic notebook executor & builder
+│   ├── export_dashboard.py   # Programmatic dashboard screen exporter
+│   ├── generate_presentation.py # PowerPoint Slide Deck compiler
+│   └── generate_final_report.py # Executive PDF report compiler (ReportLab)
 ├── logs/                     # Script run logs
 ├── requirements.txt         # Package dependencies
 ├── .gitignore               # Configured gitignore (git-ignores large database files)
@@ -119,13 +127,15 @@ The dashboard features four interactive pages:
 
 ### 3. Run Standalone Script Modules
 You can run individual pipeline segments directly:
-- **Clean data**: `python scripts/data_cleaning.py`
-- **Build database**: `python scripts/build_database.py`
-- **Performance Analytics**: `python scripts/performance_analytics.py`
-- **Advanced Analytics**: `python scripts/advanced_analytics.py`
-- **Dashboard Screenshots**: `python scripts/export_dashboard.py`
-- **PowerPoint Presentation**: `python scripts/generate_presentation.py`
-- **PDF Report**: `python scripts/generate_final_report.py`
+- **Run Full ETL**: `python scripts/etl_pipeline.py`
+- **Clean data only**: `python scripts/data_cleaning.py`
+- **Build database only**: `python scripts/build_database.py`
+- **Performance metrics**: `python scripts/compute_metrics.py`
+- **Advanced analytics & risk engine**: `python scripts/advanced_analytics.py`
+- **HTML Email Report**: `python scripts/email_report.py`
+- **Dashboard Exports (Mockups)**: `python scripts/export_dashboard.py`
+- **PowerPoint Presentation Compiler**: `python scripts/generate_presentation.py`
+- **PDF Report Compiler**: `python scripts/generate_final_report.py`
 - **Fund Recommender CLI**: `python scripts/recommender.py`
 
 ---
@@ -146,3 +156,40 @@ You can run individual pipeline segments directly:
 - **Value at Risk (VaR 95%)**: Computed as the 5th percentile of the daily return distribution (multiplied by $-1$ to represent loss magnitude).
 - **Herfindahl-Hirschman Index (HHI)**:
   $$\text{HHI} = \sum_{i} (\text{Sector Weight}_i)^2$$
+
+---
+
+## Day 5: Power BI / Tableau Integration Guide
+
+To support standard business intelligence workflows, you can connect tools like **Power BI** or **Tableau** directly to the SQLite analytical database or processed datasets in this project.
+
+### 1. Data Connection Steps
+- **Direct Database Import**: Install the SQLite ODBC Driver on your system. Define a DSN pointing to the local SQLite database at `data/db/bluestock_mf.db` to load all relational star schema tables.
+- **Flat File Import**: Alternatively, you can use the Power BI "Folder" or "Text/CSV" connectors to read the normalized, cleaned flat files from the `data/processed/` directory.
+
+### 2. Data Model Relationships
+In the Power BI Model View, configure the following relationships (ensuring referential integrity):
+- `nav_history` (composite `amfi_code` key) ──(Many-to-One)──> `clean_fund_master` (`amfi_code`)
+- `clean_investor_transactions` (`amfi_code`) ──(Many-to-One)──> `clean_fund_master` (`amfi_code`)
+- `fund_scorecard` (`amfi_code`) ──(One-to-One)──> `clean_fund_master` (`amfi_code`)
+- `clean_aum_by_fund_house` (`fund_house`) ──(Many-to-One)──> `clean_fund_master` (`fund_house`)
+
+### 3. Key DAX Calculations
+You can define custom metrics using DAX inside your Power BI panels:
+- **Scorecard Weighted Score**:
+  ```dax
+  CompositeScore = 
+  (0.30 * RANK.EQ(AVERAGE(fund_scorecard[cagr_3yr_pct]), fund_scorecard[cagr_3yr_pct], DESC)) +
+  (0.25 * RANK.EQ(AVERAGE(fund_scorecard[sharpe_ratio]), fund_scorecard[sharpe_ratio], DESC)) +
+  (0.20 * RANK.EQ(AVERAGE(fund_scorecard[alpha]), fund_scorecard[alpha], DESC)) +
+  (0.15 * RANK.EQ(AVERAGE(fund_scorecard[expense_ratio_pct]), fund_scorecard[expense_ratio_pct], ASC)) +
+  (0.10 * RANK.EQ(AVERAGE(fund_scorecard[max_drawdown_pct]), fund_scorecard[max_drawdown_pct], ASC))
+  ```
+- **Annualized Sharpe Ratio**:
+  ```dax
+  Sharpe = DIVIDE(AVERAGE(fund_scorecard[cagr_3yr_pct]) - 6.5, AVERAGE(fund_scorecard[std_dev_ann_pct]))
+  ```
+
+### 4. Interactive Previews & Export
+Mockup snapshots representing pages 1 to 4 of the interactive dashboard are exported at `reports/charts/dashboard_page1.png` through `dashboard_page4.png`. A compiled landscape PDF is available for review at [reports/Dashboard.pdf](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/reports/Dashboard.pdf).
+

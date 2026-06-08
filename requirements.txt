@@ -7,3 +7,8 @@ plotly==5.24.1
 sqlalchemy==2.0.36
 requests==2.32.3
 jupyter==1.1.1
+streamlit==1.58.0
+reportlab==4.5.1
+python-pptx==1.0.2
+nbformat==5.10.4
+nbconvert==7.17.1

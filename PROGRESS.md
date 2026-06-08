@@ -63,34 +63,60 @@ GitHub Repository: [Srujan4812/bluestock-mf-capstone](https://github.com/Srujan4
 
 ---
 
+### 📅 DAY 5 — Interactive Dashboard Development
+- **Visual Analytics Hub**: Created `dashboard/app.py` using Streamlit, featuring an Outfit Google Font face, glassmorphism card containers, hover micro-animations, and multi-option sidebar filter controls (AMC, category, and plan type).
+- **Core Dashboard Pages**:
+  - **Page 1: Industry Overview**: Displays Total Industry AUM (₹81.0 L Cr), Monthly SIP Inflows, folio counts, and AMC asset consolidation.
+  - **Page 2: Fund Performance**: Plots Risk-Return profiles (CAGR vs. Std Dev), renders the weighted scorecard ranking table, and shows normalized NAV vs. Benchmark comparisons. Fixed bubble chart sizing for negative Sharpe ratios by scaling values to `sharpe_ratio_size`.
+  - **Page 3: Investor Analytics**: State-wise transactions bar charts, ticket size box plots by age, transaction types (SIP vs. Lumpsum vs. Redemption) splits, and monthly volume line trends.
+  - **Page 4: SIP & Market Trends**: Dual-axis overlays correlating monthly SIP inflows with the Nifty 50 close index, category inflows, and net inflow heatmaps.
+- **Visual Exports**: Developed [scripts/export_dashboard.py](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/scripts/export_dashboard.py) which programmatically snaps pages 1 to 4 as high-res PNG screens and compiles them into a landscaped evaluation deck at [reports/Dashboard.pdf](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/reports/Dashboard.pdf).
+- **Zero-Config Cloud Deploy Check**: Configured the dashboard startup block to dynamically compile the database and clean flat files if missing (supporting click-to-deploy on Streamlit Community Cloud).
+
+### 📅 DAY 6 — Advanced Analytics & Risk Modelling
+- **Tail Vulnerability Engine**: Computed daily Historical Value at Risk (VaR 95%) and Conditional Value at Risk (CVaR 95%) for all 40 funds. Saved outputs to `data/processed/var_cvar_report.csv`.
+- **Rolling Volatility**: Plotted 90-day rolling Sharpe ratios for top funds to evaluate performance stability over time. Saved chart to `reports/charts/rolling_sharpe_chart.png`.
+- **Acquisition Segment Cohorts**: Grouped transaction habits to compare 2024 and 2025 investor cohorts on averages, net ticket volumes, and asset class preferences. Saved to `data/processed/cohort_analysis.csv`.
+- **SIP Churn Predictor**: Screened transaction intervals to identify and flag investors with maximum payment gaps > 35 days as "at-risk". Saved results to `data/processed/sip_continuity.csv`.
+- **Diversification Analysis**: Computed the Herfindahl-Hirschman Index (HHI) of sector weights to evaluate holdings concentration. Saved to `data/processed/sector_hhi.csv` and plotted top concentrated schemes to `reports/charts/sector_concentration.png`.
+- **B3 — Monte Carlo Simulation**: Forecasted 1,000 potential NAV growth paths over 5 years (1,260 trading days) using Geometric Brownian Motion (GBM) drift. Saved outputs to `data/processed/monte_carlo_projections.csv` and the chart to `reports/charts/monte_carlo_simulation.png`.
+- **B4 — Portfolio Optimization**: Built a Markowitz Efficient Frontier model simulating 2,000 random weight combinations of top scorecard funds. Calculated Expected Return, Volatility, Sharpe ratios, and Maximum Sharpe Ratio (MSR) and Minimum Variance Portfolio (MVP) weights. Saved data to `data/processed/efficient_frontier_results.csv` and the plot to `reports/charts/efficient_frontier.png`.
+- **Numbered Notebooks**: Staged and programmatically ran [notebooks/05_advanced_analytics.ipynb](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/notebooks/05_advanced_analytics.ipynb) containing explanations, LaTeX equations, calculations, and chart renders.
+
+### 📅 DAY 7 — Final Reporting & Slide Deck Compilation
+- **B5 — Weekly performance email report**: Programmed [scripts/email_report.py](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/scripts/email_report.py) to compile portfolio stats, cohort activity, and scorecard lists into a responsive HTML email summary saved at [reports/weekly_performance_report.html](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/reports/weekly_performance_report.html).
+- **PowerPoint Presentation Deck**: Coded [scripts/generate_presentation.py](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/scripts/generate_presentation.py) to compile a 12-slide presentation deck at [reports/Presentation.pptx](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/reports/Presentation.pptx). Features clean slide layouts matching Bluestock Fintech’s brand guidelines.
+- **Executive PDF Report**: Wrote [scripts/generate_final_report.py](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/scripts/generate_final_report.py) using ReportLab. Renders the Cover Page, Executive Summary, SQL DDL schema and queries, EDA charts, Scorecard grids, VaR tables, cohort statistics, and dashboard walkthroughs. Saved to [reports/Final_Report.pdf](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/reports/Final_Report.pdf).
+- **Master Orchestrator**: Developed [run_pipeline.py](file:///c:/Users/madhu/OneDrive/Desktop/bluestock_mf_capstone/run_pipeline.py) to execute all steps sequentially, ensuring complete data consistency across database rows, scorecard files, notebooks, slides, and PDF report pages.
+
+---
+
 ## Current Project Folder Structure
 ```
 bluestock_mf_capstone/
 ├── data/
-│   ├── raw/                 # 10 raw CSV datasets
-│   └── processed/           # cleaned CSVs + bluestock.db + fund_scorecard.csv + alpha_beta.csv
-├── notebooks/
-│   ├── EDA_Analysis.ipynb
-│   └── Performance_Analytics.ipynb
+│   ├── raw/                 # Original flat CSV datasets (87K+ transaction rows)
+│   ├── processed/           # Cleansed, normalized CSV outputs
+│   └── db/                  # Star schema SQLite database (bluestock_mf.db - ignored by git)
 ├── sql/
-│   ├── schema.sql
-│   └── star_schema.sql
+│   ├── schema.sql           # SQLite Star Schema DDL definitions
+│   ├── star_schema.sql      # Star Schema documentation/references
+│   └── queries.sql          # 11 validation and analytical SQL queries
+├── notebooks/
+│   ├── 01_data_ingestion.ipynb    # Day 1 Data Ingestion & Profiling
+│   ├── 02_data_cleaning.ipynb     # Day 2 Data Cleaning & Standardisation
+│   ├── 03_eda_analysis.ipynb      # Day 3 Exploratory Data Analysis (EDA)
+│   ├── 04_performance_analytics.ipynb # Day 4 Return & Performance calculations
+│   └── 05_advanced_analytics.ipynb    # Day 6 Risk, Monte Carlo & Portfolio optimization
+├── dashboard/
+│   └── app.py               # Day 5 Multi-page Interactive Streamlit Application
 ├── reports/
-│   ├── charts/              # 17 EDA charts + benchmark comparison chart
-│   ├── data_quality_report.txt
-│   ├── day2_validation_report.txt
-│   ├── day4_performance_report.txt
-│   └── data_dictionary.md
-├── scripts/
-│   ├── data_ingestion.py
-│   ├── live_nav_fetch.py
-│   ├── data_cleaning.py
-│   ├── build_database.py
-│   ├── performance_analytics.py
-│   ├── generate_notebook.py
-│   └── _common.py
-├── PROGRESS.md
-├── README.md
-├── requirements.txt
-└── .gitignore
+│   ├── charts/              # Generated high-res visualization PNG files
+│   ├── data_dictionary.md   # Mapping of tables, data types, and primary/foreign keys
+│   ├── data_quality_report.txt     # Day 1 Data Ingestion Profile
+│   ├── day2_validation_report.txt  # Day 2 DB Schema Validation Report
+│   ├── day4_performance_report.txt # Day 4 Performance Stats & Scorecard rankings
+│   ├── Dashboard.pdf        # Day 5 Landscaped Dashboard mockup PDF
+│   ├── Final_Report.pdf     # Day 7 Comprehensive Executive Report
+│   └── Presentation.pptx    # Day 7 PowerPoint Presentation Slide Deck
 ```

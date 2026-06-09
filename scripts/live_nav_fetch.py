@@ -1,13 +1,6 @@
 """
-Day 1 - Live NAV fetch for Bluestock Mutual Fund Analytics.
-
-Fetches NAV data for a fixed set of AMFI scheme codes from the public
-AMFI-backed API (api.mfapi.in, keyed by AMFI scheme code), parses the JSON
-response and saves the full NAV history to ``data/raw/live_nav.csv``.
-
-Codes (per the Day 1 brief):
-    125497 (HDFC Top 100 Direct), plus 5 key schemes
-    119551, 120503, 118632, 119092, 120841
+Fetches historical and live NAV data for target mutual fund schemes from 
+the api.mfapi.in REST endpoint and saves the data to the raw directory.
 """
 from __future__ import annotations
 

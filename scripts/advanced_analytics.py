@@ -1,14 +1,8 @@
 """
-Day 6 - Advanced Analytics and Risk Metrics for Bluestock MF Analytics.
-
-Computes:
-1. Historical Value at Risk (VaR 95%) and Conditional VaR (CVaR 95%).
-2. Rolling 90-day Sharpe Ratio for 5 selected funds.
-3. Investor Cohort Analysis (2024 vs 2025 cohorts).
-4. SIP Continuation / Churn Analysis (flagging at-risk investors).
-5. Sector Concentration Analysis (HHI of sector weights).
-6. B3 - Monte Carlo Simulation: project 5-year NAV growth for the top scorecard fund.
-7. B4 - Markowitz Efficient Frontier: portfolio optimization for 5 selected funds.
+Computes portfolio analytics and risk metrics including Value at Risk (VaR), 
+Conditional VaR (CVaR), rolling Sharpe ratio, investor cohort metrics, 
+SIP churn rates, sector concentration (HHI), Monte Carlo NAV forecasts, 
+and Markowitz portfolio optimization.
 """
 from __future__ import annotations
 
@@ -270,7 +264,7 @@ def sector_concentration_analysis(holdings_df: pd.DataFrame, master_df: pd.DataF
     return hhi_df
 
 def compute_monte_carlo(nav_df: pd.DataFrame, scorecard_df: pd.DataFrame) -> None:
-    """B3 - Monte Carlo Simulation: project 5-year NAV growth for the top scorecard fund."""
+    """Project 5-year NAV growth for the top scorecard fund using Monte Carlo simulation."""
     logger.info("Computing Monte Carlo 5-Year NAV Projections...")
     
     if scorecard_df.empty:
@@ -348,7 +342,7 @@ def compute_monte_carlo(nav_df: pd.DataFrame, scorecard_df: pd.DataFrame) -> Non
     logger.info("Saved Monte Carlo simulation chart to %s", mc_chart)
 
 def compute_portfolio_optimization(nav_df: pd.DataFrame, scorecard_df: pd.DataFrame, Rf_annual: float = 0.065) -> None:
-    """B4 - Markowitz Efficient Frontier portfolio optimization for 5 selected funds."""
+    """Perform Markowitz portfolio optimization for the top 5 scorecard funds."""
     logger.info("Computing Markowitz Efficient Frontier Portfolio Optimization...")
     
     if scorecard_df.empty:
@@ -484,11 +478,11 @@ def main() -> None:
     sip_continuation_analysis(tx_df)
     sector_concentration_analysis(holdings_df, master_df)
     
-    # Run B3 and B4 computations
+    # Run forecasts and portfolio optimization
     compute_monte_carlo(nav_df, scorecard_df)
     compute_portfolio_optimization(nav_df, scorecard_df)
     
-    logger.info("Day 6 - Advanced Analytics run completed successfully!")
+    logger.info("Advanced Analytics run completed successfully!")
 
 if __name__ == "__main__":
     main()

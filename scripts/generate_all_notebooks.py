@@ -1,11 +1,5 @@
 """
-Generate and execute all 5 Jupyter Notebooks required by the Capstone Rubric.
-
-1. 01_data_ingestion.ipynb (Ingestion, schema check, datatype profiling)
-2. 02_data_cleaning.ipynb (Column normalization, weekday gap ffill, numeric coercion)
-3. 03_eda_analysis.ipynb (EDA copies and plots)
-4. 04_performance_analytics.ipynb (Performance statistics)
-5. 05_advanced_analytics.ipynb (Risk engine, HHI, Churn, Monte Carlo B3, Markowitz B4)
+Generate and execute all 5 Jupyter Notebooks.
 """
 from __future__ import annotations
 
@@ -46,8 +40,8 @@ def generate_ingestion_notebook():
     nb = nbf.v4.new_notebook()
     cells = [
         nbf.v4.new_markdown_cell(
-            "# 01 - Data Ingestion & Quality Profiling\n\n"
-            "This notebook explores the raw files of the Bluestock Mutual Fund Analytics project. "
+            "# Data Ingestion & Quality Profiling\n\n"
+            "This notebook explores the raw files of the Mutual Fund Analytics project. "
             "It profiles dataset shapes, column datatypes, nulls, duplicates, and checks AMFI codes referential integrity."
         ),
         nbf.v4.new_code_cell(
@@ -73,7 +67,7 @@ def generate_cleaning_notebook():
     nb = nbf.v4.new_notebook()
     cells = [
         nbf.v4.new_markdown_cell(
-            "# 02 - Data Cleaning & Schema Normalization\n\n"
+            "# Data Cleaning & Schema Normalization\n\n"
             "This notebook applies column-name normalisation, whitespace trimming, date parsing, integer coercion, "
             "and ffill() for weekend/holiday NAV gaps."
         ),
@@ -109,12 +103,12 @@ def append_advanced_metrics_to_notebook():
         nb = nbf.read(f, as_version=4)
         
     # Check if Monte Carlo cells already exist
-    has_mc = any("## B3" in cell.get("source", "") for cell in nb.cells)
+    has_mc = any("## Monte Carlo Simulation" in cell.get("source", "") for cell in nb.cells)
     if not has_mc:
-        print("Appending B3 Monte Carlo to notebook...")
+        print("Appending Monte Carlo Simulation to notebook...")
         nb.cells.append(
             nbf.v4.new_markdown_cell(
-                "## B3 — Monte Carlo Simulation (5-Year NAV Projections)\n\n"
+                "## Monte Carlo Simulation (5-Year NAV Projections)\n\n"
                 "Using historical mean returns and volatility to simulate 1,000 potential NAV growth paths over 5 years."
             )
         )
@@ -141,12 +135,12 @@ def append_advanced_metrics_to_notebook():
         )
         
     # Check if Markowitz optimization exists
-    has_markowitz = any("## B4" in cell.get("source", "") for cell in nb.cells)
+    has_markowitz = any("## Markowitz Efficient Frontier" in cell.get("source", "") for cell in nb.cells)
     if not has_markowitz:
-        print("Appending B4 Markowitz Optimization to notebook...")
+        print("Appending Markowitz Optimization to notebook...")
         nb.cells.append(
             nbf.v4.new_markdown_cell(
-                "## B4 — Markowitz Efficient Frontier Portfolio Optimization\n\n"
+                "## Markowitz Efficient Frontier Portfolio Optimization\n\n"
                 "Simulates expected return and volatility for random allocations among the top 5 scorecard funds."
             )
         )
@@ -171,12 +165,12 @@ def append_advanced_metrics_to_notebook():
         )
 
     # Check if Advanced Insights already exist
-    has_insights = any("## 6. Advanced Insights & Risk Metrics Report" in cell.get("source", "") for cell in nb.cells)
+    has_insights = any("## Portfolio Risk & Performance Insights" in cell.get("source", "") for cell in nb.cells)
     if not has_insights:
-        print("Appending Advanced Insights markdown to notebook...")
+        print("Appending Portfolio Risk & Performance Insights markdown to notebook...")
         insights_md = (
-            "## 6. Advanced Insights & Risk Metrics Report\n\n"
-            "Based on the quantitative analyses executed on the datasets, we have extracted the following five advanced key insights:\n\n"
+            "## Portfolio Risk & Performance Insights\n\n"
+            "Based on the quantitative analyses executed on the datasets, we have extracted the following five key insights:\n\n"
             "### Insight 1: Small Cap Funds Exhibit Highest Downside Risk (VaR & CVaR)\n"
             "* **Finding**: Aditya Birla Sun Life (ABSL) Small Cap Fund (Regular - Growth) exhibits the highest daily downside risk with a **95% VaR of 2.39%** and a **95% CVaR of 3.03%**, followed closely by Axis Small Cap Fund (VaR: 2.33%, CVaR: 2.97%) and SBI Small Cap Fund (VaR: 2.32%, CVaR: 3.02%).\n"
             "* **Implication**: For a ₹1,00,000 portfolio in ABSL Small Cap, there is a 5% probability of losing more than ₹2,391 on any single trading day. If that threshold is breached, the average expected loss is ₹3,029. High-risk tolerance is mandatory for these schemes.\n\n"

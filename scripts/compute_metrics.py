@@ -1,16 +1,7 @@
 """
-Day 4 - Fund Performance Analytics for Bluestock Mutual Fund Analytics.
-
-Computes:
-1. Daily returns and validates distribution.
-2. CAGR for 1yr, 3yr, and 5yr (using maximum available history for 5yr, i.e., 4.4 years).
-3. Sharpe Ratio (using Rf = 6.5% and 252 trading days).
-4. Sortino Ratio (using downside standard deviation for negative return days only).
-5. Alpha and Beta (using OLS regression against Nifty 100 returns).
-6. Maximum Drawdown and worst drawdown date range.
-7. Fund Scorecard (0-100 composite ranking).
-8. Benchmark comparison chart (plotting top 5 funds vs Nifty 50 and Nifty 100 over 3 years)
-   and tracking error calculation.
+Computes fund performance analytics including daily returns, annualized CAGR (1yr, 3yr, 5yr), 
+Sharpe and Sortino ratios, risk-adjusted alpha/beta OLS regressions, maximum drawdown, 
+and builds a composite scorecard for comparison.
 """
 from __future__ import annotations
 
@@ -36,7 +27,7 @@ SCORECARD_PATH = PROCESSED_DIR / "fund_scorecard.csv"
 ALPHA_BETA_PATH = PROCESSED_DIR / "alpha_beta.csv"
 CHARTS_DIR = REPORTS_DIR / "charts"
 CHART_PATH = CHARTS_DIR / "benchmark_comparison.png"
-REPORT_PATH = REPORTS_DIR / "day4_performance_report.txt"
+REPORT_PATH = REPORTS_DIR / "performance_report.txt"
 
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load cleaned datasets required for analysis."""
@@ -391,7 +382,7 @@ def main() -> None:
         
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text("\n".join(report_lines), encoding="utf-8")
-    logger.info("Saved Day 4 validation report to %s", REPORT_PATH)
+    logger.info("Saved validation report to %s", REPORT_PATH)
     logger.info("Performance analytics run completed successfully!")
 
 if __name__ == "__main__":

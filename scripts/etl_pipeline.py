@@ -1,9 +1,7 @@
 """
-Master ETL Pipeline Orchestrator for Bluestock MF Analytics.
+Master ETL Pipeline Orchestrator.
 
-Runs sequentially:
-1. Ingestion profiling & validation (data_ingestion.py)
-2. Cleaning raw files & SQLite DB Loading (build_database.py)
+Sequentially triggers ingestion profiling, raw file cleaning, and SQLite database loading.
 """
 from __future__ import annotations
 import sys

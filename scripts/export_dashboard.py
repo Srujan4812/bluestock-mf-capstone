@@ -1,8 +1,6 @@
 """
-Day 5 - Programmatic dashboard exporter for Bluestock MF Analytics.
-
-Generates 4 high-resolution dashboard mockup pages (PNGs) representing
-the Streamlit interactive application views and compiles them into a
+Generates high-resolution dashboard mockup pages (PNGs) representing
+the interactive application views and compiles them into a
 unified 'reports/Dashboard.pdf' file.
 """
 from __future__ import annotations
@@ -398,7 +396,7 @@ def main() -> None:
     img_paths.append(generate_page4())
     
     compile_pdf(img_paths)
-    logger.info("Day 5 - Dashboard Export process finished successfully!")
+    logger.info("Dashboard Export process finished successfully!")
 
 if __name__ == "__main__":
     main()

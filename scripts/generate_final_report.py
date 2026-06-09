@@ -1,6 +1,4 @@
 """
-Day 7 - Programmatic PDF Report Generator for Bluestock MF Analytics.
-
 Compiles a comprehensive, professional, multi-page executive report at
 'reports/Final_Report.pdf' using ReportLab. Includes structured text,
 formatted results tables, and embeds all generated visualization charts.

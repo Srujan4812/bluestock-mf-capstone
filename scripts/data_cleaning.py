@@ -1,5 +1,5 @@
 """
-Day 2 - Data cleaning pipeline for Bluestock Mutual Fund Analytics.
+Data cleaning pipeline.
 
 Reads the 10 raw CSV datasets and applies: column-name normalisation,
 whitespace trimming, date parsing (to ISO ``YYYY-MM-DD`` strings), integer

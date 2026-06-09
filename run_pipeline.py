@@ -1,14 +1,5 @@
 """
-Master Pipeline Orchestrator for Bluestock Mutual Fund Analytics Platform.
-
-Runs all sequential tasks of the 7-day capstone project:
-1. Data cleaning (Day 2)
-2. Database building and integrity checks (Day 2)
-3. Performance analytics and scorecard calculations (Day 4)
-4. Advanced risk analytics, behavioral reports, and Jupyter Notebook (Day 6)
-5. Dashboard screenshots and PDF exports (Day 5)
-6. PowerPoint presentation slide deck compilation (Day 7)
-7. Executive PDF report generation (Day 7)
+Orchestrates the execution of the full analytics and reporting pipeline.
 """
 from __future__ import annotations
 

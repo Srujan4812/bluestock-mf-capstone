@@ -1,10 +1,10 @@
 """
-Day 2 - Build and validate the SQLite database for Bluestock MF Analytics.
+Builds and validates the SQLite database.
 
-Regenerates the cleaned CSVs, creates ``data/processed/bluestock.db`` from
-``sql/schema.sql``, loads every cleaned dataset in foreign-key-safe order, runs
-referential-integrity / sanity validation checks and confirms ``sql/queries.sql``
-executes. A validation report is written to ``reports/day2_validation_report.txt``.
+Creates the SQLite database from ``sql/schema.sql``, loads every cleaned dataset 
+in foreign-key-safe order, runs referential-integrity and sanity validation checks, 
+and confirms ``sql/queries.sql`` executes. A validation report is written to 
+``reports/database_validation_report.txt``.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from _common import DB_PATH, PROCESSED_DIR, REPORTS_DIR, SQL_DIR, get_logger
 
 logger = get_logger("build_database")
 
-REPORT_PATH = REPORTS_DIR / "day2_validation_report.txt"
+REPORT_PATH = REPORTS_DIR / "database_validation_report.txt"
 
 # foreign-key-safe load order (parent first)
 LOAD_ORDER: list[str] = [

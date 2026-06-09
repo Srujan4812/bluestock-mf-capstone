@@ -1,9 +1,6 @@
 """
-Day 6 - Fund Recommender Module for Bluestock MF Analytics.
-
-Implements recommendation logic that recommends the top 3 mutual funds
-matching an investor's risk appetite (Low, Moderate, High) based on their
-annualized Sharpe ratio.
+Recommends mutual funds matching an investor's risk appetite (Low, Moderate, High) 
+based on their annualized Sharpe ratio.
 """
 from __future__ import annotations
 

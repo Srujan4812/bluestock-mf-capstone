@@ -1,8 +1,6 @@
 """
-Day 7 - Programmatic presentation generator for Bluestock MF Analytics.
-
-Generates a professional 12-slide PowerPoint presentation deck at
-'reports/Presentation.pptx' using a custom deep slate and indigo theme.
+Generates a professional PowerPoint presentation deck at
+'reports/Presentation.pptx' detailing portfolio analytics and dashboard insights.
 """
 from __future__ import annotations
 
@@ -160,8 +158,8 @@ def main() -> None:
     add_text_box(s1, 1.0, 2.2, 11.33, 3.5, [
         {"text": "MUTUAL FUND ANALYTICS PLATFORM", "size": 36, "bold": True, "color": "text", "space_after": 10},
         {"text": "End-to-End Data Engineering, ETL Pipeline & Interactive Dashboard", "size": 18, "color": "indigo", "space_after": 40},
-        {"text": "Company: Bluestock Fintech Pvt. Ltd. (Capstone Project)", "size": 14, "color": "muted", "space_after": 5},
-        {"text": "Prepared By: Srujan / Data Analyst Intern", "size": 14, "color": "emerald", "space_after": 5},
+        {"text": "Mutual Fund Performance Analytics", "size": 14, "color": "muted", "space_after": 5},
+        {"text": "Prepared By: Srujan / Quantitative Analyst", "size": 14, "color": "emerald", "space_after": 5},
         {"text": "Date: June 2026", "size": 12, "color": "muted"}
     ])
     
@@ -195,17 +193,17 @@ def main() -> None:
     # ----------------- SLIDE 3: OBJECTIVES -----------------
     s3 = prs.slides.add_slide(blank_layout)
     apply_background(s3)
-    add_header(s3, "Capstone Project Objectives")
+    add_header(s3, "Analytics Project Objectives")
     
     add_text_box(s3, 0.7, 1.8, 11.9, 5.0, [
-        {"text": "Key Deliverables & Outcomes achieved during the 7-Day Timeline:", "size": 16, "bold": True, "color": "indigo", "space_after": 20},
-        {"text": "Day 1-2: Automated Ingestion & SQL Database Design", "size": 15, "bold": True, "color": "text", "space_after": 5},
+        {"text": "Key Deliverables & Outcomes achieved during the Project Timeline:", "size": 16, "bold": True, "color": "indigo", "space_after": 20},
+        {"text": "Phase 1: Automated Ingestion & SQL Database Design", "size": 15, "bold": True, "color": "text", "space_after": 5},
         {"text": "  - Ingest 10 flat CSV files containing 87K+ rows of historical transaction and NAV data.", "size": 13, "color": "muted", "space_after": 3},
         {"text": "  - Build a 5-table star schema SQLite database and run integrity validation scripts.", "size": 13, "color": "muted", "space_after": 15},
-        {"text": "Day 3-4: Exploratory Data Analysis & Performance Scoring", "size": 15, "bold": True, "color": "text", "space_after": 5},
+        {"text": "Phase 2: Exploratory Data Analysis & Performance Scoring", "size": 15, "bold": True, "color": "text", "space_after": 5},
         {"text": "  - Generate 17 key visualization charts mapping NAV, AUM, category inflows, and demographics.", "size": 13, "color": "muted", "space_after": 3},
         {"text": "  - Compute 3yr CAGR, Sharpe, Sortino, Alpha/Beta, and Maximum Drawdown to rank all 40 funds.", "size": 13, "color": "muted", "space_after": 15},
-        {"text": "Day 5-7: Interactive Visualization, Advanced Analytics & Delivery", "size": 15, "bold": True, "color": "text", "space_after": 5},
+        {"text": "Phase 3: Interactive Visualization, Advanced Analytics & Delivery", "size": 15, "bold": True, "color": "text", "space_after": 5},
         {"text": "  - Develop an interactive multi-page Streamlit dashboard as a premium analytical workspace.", "size": 13, "color": "muted", "space_after": 3},
         {"text": "  - Implement Historical Value at Risk (VaR 95%), sector HHI concentration, cohort analysis, and fund recommendation.", "size": 13, "color": "muted", "space_after": 3},
         {"text": "  - Auto-generate presentation deck, 15-page PDF executive report, and push code package to GitHub.", "size": 13, "color": "muted"}

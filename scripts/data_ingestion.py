@@ -1,5 +1,5 @@
 """
-Day 1 - Data ingestion & quality report for Bluestock Mutual Fund Analytics.
+Data ingestion & quality report generator.
 
 Loads all 10 raw CSV datasets and reports: shape, dtypes, head, missing values,
 duplicates and datatype issues. Also explores fund_master and validates AMFI

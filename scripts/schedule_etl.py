@@ -1,8 +1,8 @@
 """
-Day 5 / Bonus B1 - Weekday 8 PM ETL Scheduler.
+Weekday ETL Scheduler Daemon.
 
-Runs continuously in the background, checking every 30 seconds if it is 8:00 PM (20:00)
-on a weekday (Monday to Friday), and if so, triggers the ETL pipeline orchestrator.
+Runs continuously in the background, checking if it is 8:00 PM (20:00)
+on a weekday (Monday to Friday), and if so, triggers the ETL pipeline.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ ETL_SCRIPT = ROOT / "scripts" / "etl_pipeline.py"
 
 def run_scheduler():
     print("======================================================================")
-    print("BLUESTOCK ETL SCHEDULER DEAMON ACTIVE")
+    print("MUTUAL FUND ANALYTICS - ETL SCHEDULER ACTIVE")
     print(f"System Time    : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Trigger Target : Weekdays (Mon-Fri) at 20:00 (8:00 PM)")
     print("======================================================================")

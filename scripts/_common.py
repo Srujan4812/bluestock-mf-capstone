@@ -1,4 +1,4 @@
-"""Shared paths and logging configuration for Bluestock MF Analytics."""
+"""Shared paths and logging configuration."""
 from __future__ import annotations
 
 import logging

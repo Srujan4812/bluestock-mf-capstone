@@ -1,3 +1,4 @@
+# Dependencies for Mutual Fund Analytics Platform
 pandas==2.2.2
 numpy==1.26.4
 scipy==1.14.1

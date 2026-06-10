@@ -140,18 +140,21 @@ required_files = [
 ]
 missing_files = [f for f in required_files if not (PROCESSED_DIR / f).exists()]
 if missing_files:
-    import subprocess
     import sys
     
     # Ensure directories exist
     (ROOT_DIR / "data" / "db").mkdir(parents=True, exist_ok=True)
     (ROOT_DIR / "reports" / "charts").mkdir(parents=True, exist_ok=True)
     
-    # Run pipelines to generate database & clean outputs
-    scripts = ["etl_pipeline.py", "compute_metrics.py", "advanced_analytics.py"]
-    for script_name in scripts:
-        script_path = ROOT_DIR / "scripts" / script_name
-        subprocess.run([sys.executable, str(script_path)], cwd=str(ROOT_DIR), check=True)
+    # Run pipelines directly in-process
+    sys.path.append(str(ROOT_DIR / "scripts"))
+    import etl_pipeline
+    import compute_metrics
+    import advanced_analytics
+    
+    etl_pipeline.run()
+    compute_metrics.main()
+    advanced_analytics.main()
 
 # Helper function to load cleaned CSVs
 @st.cache_data

@@ -1,4 +1,4 @@
--- Bluestock Mutual Fund Analytics - validation & analytical queries (Day 2)
+-- Mutual Fund Analytics - validation & analytical queries
 
 -- == VALIDATION ==
 

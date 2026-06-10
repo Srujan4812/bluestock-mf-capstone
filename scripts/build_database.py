@@ -49,7 +49,7 @@ def load_tables(conn: sqlite3.Connection) -> dict[str, int]:
 
 def validate(conn: sqlite3.Connection, csv_counts: dict[str, int]) -> list[str]:
     """Run validation checks and return human-readable report lines."""
-    lines: list[str] = ["DAY 2 VALIDATION REPORT", "=" * 40, ""]
+    lines: list[str] = ["DATABASE SCHEMA VALIDATION REPORT", "=" * 40, ""]
     ok = True
 
     lines.append("[Row counts: DB vs cleaned CSV]")

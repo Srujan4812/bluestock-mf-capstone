@@ -172,12 +172,12 @@ def main() -> None:
     # PAGE 1: COVER PAGE
     # ==========================================
     story.append(Spacer(1, 100))
-    story.append(Paragraph("BLUESTOCK FINTECH", ParagraphStyle('Company', fontName='Helvetica-Bold', fontSize=14, leading=16, textColor=PRIMARY, spaceAfter=20)))
-    story.append(Paragraph("MUTUAL FUND ANALYTICS<br/>PLATFORM", title_style))
+    story.append(Paragraph("MUTUAL FUND ANALYTICS", ParagraphStyle('Company', fontName='Helvetica-Bold', fontSize=14, leading=16, textColor=PRIMARY, spaceAfter=20)))
+    story.append(Paragraph("MUTUAL FUND PERFORMANCE & RISK REPORT", title_style))
     story.append(Paragraph("End-to-End Data Engineering, ETL Pipeline & Interactive Dashboard", subtitle_style))
     story.append(Spacer(1, 100))
-    story.append(Paragraph("<b>Project Type:</b> Individual Capstone Project", metadata_style))
-    story.append(Paragraph("<b>Prepared By:</b> Intern / Data Analyst — Srujan", metadata_style))
+    story.append(Paragraph("<b>Report Type:</b> Performance & Portfolio Risk Analytics Summary", metadata_style))
+    story.append(Paragraph("<b>Prepared By:</b> Quantitative Analyst — Srujan", metadata_style))
     story.append(Paragraph("<b>Domain:</b> Mutual Fund / FinTech", metadata_style))
     story.append(Paragraph("<b>Date:</b> June 2026", metadata_style))
     story.append(PageBreak())
@@ -211,7 +211,7 @@ def main() -> None:
     # ==========================================
     story.append(Paragraph("1. Project Overview & Context", h1_style))
     story.append(Paragraph(
-        "Bluestock Fintech seeks to democratize investment analytics for retail and institutional investors. The primary goal of this analytics platform is to track NAV movements of 40+ key mutual fund schemes, monitor AUM growth of the 10 largest fund houses, analyze investor transaction patterns, benchmark active fund returns against indexes, and compute mathematical risk-adjusted ratios.",
+        "The analytics platform seeks to democratize investment analytics for retail and institutional investors. The primary goal of this analytics platform is to track NAV movements of 40+ key mutual fund schemes, monitor AUM growth of the 10 largest fund houses, analyze investor transaction patterns, benchmark active fund returns against indexes, and compute mathematical risk-adjusted ratios.",
         body_style
     ))
     story.append(Paragraph("Business Objectives Met:", h2_style))
@@ -348,7 +348,7 @@ def main() -> None:
     # ==========================================
     story.append(Paragraph("6. Advanced Risk & Behavioral Analytics", h1_style))
     story.append(Paragraph(
-        "Day 6 analytics focused on advanced mathematical risk modelling: Historical Value at Risk (VaR 95%), Conditional VaR (CVaR 95%), rolling Sharpe ratios, investor cohort metrics, SIP continuation, and sector concentration.",
+        "Advanced analytics focused on mathematical risk modelling: Historical Value at Risk (VaR 95%), Conditional VaR (CVaR 95%), rolling Sharpe ratios, investor cohort metrics, SIP continuation, and sector concentration.",
         body_style
     ))
     story.append(Paragraph("Historical Value at Risk (95% Confidence):", h2_style))
@@ -482,7 +482,7 @@ def main() -> None:
     # ==========================================
     story.append(Paragraph("8. Key Recommendations & Conclusion", h1_style))
     story.append(Paragraph(
-        "The Capstone project successfully establishes a production-quality mutual fund analytics platform at Bluestock Fintech. By combining automated extraction, database storage, and programmatic risk reporting, the platform resolves data fragmentation and provides advisors with actionable insight.",
+        "The platform successfully establishes a production-quality mutual fund analytics engine. By combining automated extraction, database storage, and programmatic risk reporting, the platform resolves data fragmentation and provides advisors with actionable insight.",
         body_style
     ))
     story.append(Paragraph("Strategic Business Recommendations:", h2_style))

@@ -1,4 +1,4 @@
-DAY 2 VALIDATION REPORT
+DATABASE SCHEMA VALIDATION REPORT
 ========================================
 
 [Row counts: DB vs cleaned CSV]

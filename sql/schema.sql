@@ -1,4 +1,4 @@
--- Bluestock Mutual Fund Analytics - SQLite schema (Day 2)
+-- Mutual Fund Analytics - SQLite schema
 -- Dates are stored as ISO text (YYYY-MM-DD); months as text (YYYY-MM).
 
 PRAGMA foreign_keys = ON;

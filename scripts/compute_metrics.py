@@ -344,7 +344,7 @@ def main() -> None:
     # Write a comprehensive validation report
     report_lines = [
         "======================================================================",
-        "Day 4 - Fund Performance Analytics Validation Report",
+        "Fund Performance Analytics Validation Report",
         f"Generated At : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "======================================================================",
         "",

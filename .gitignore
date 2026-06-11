@@ -12,6 +12,15 @@ env/
 # Data (keep structure via .gitkeep, ignore bulk/generated data)
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/clean_*.csv
+!data/processed/fund_scorecard.csv
+!data/processed/alpha_beta.csv
+!data/processed/var_cvar_report.csv
+!data/processed/sector_hhi.csv
+!data/processed/cohort_analysis.csv
+!data/processed/sip_continuity.csv
+!data/processed/monte_carlo_projections.csv
+!data/processed/efficient_frontier_results.csv
 data/db/*
 !data/db/.gitkeep
 logs/*

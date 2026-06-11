@@ -3,6 +3,8 @@
 **Prepared By: Srujan / Quantitative Analyst**  
 **Date: June 2026**
 
+🚀 **Live Dashboard**: [https://bluestock-mf-capstone-1.onrender.com](https://bluestock-mf-capstone-1.onrender.com)
+
 ---
 
 ## Project Overview

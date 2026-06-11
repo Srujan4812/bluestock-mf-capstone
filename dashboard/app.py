@@ -486,12 +486,13 @@ elif page == "Fund Performance":
         code = int(fund_row['amfi_code'])
         
         try:
-            with get_db_connection() as conn:
-                fund_nav = pd.read_sql("SELECT date, nav FROM nav_history WHERE amfi_code = ? ORDER BY date", conn, params=(code,))
-                fund_nav['date'] = pd.to_datetime(fund_nav['date'])
-                benchmarks = pd.read_sql("SELECT date, index_name, close_value FROM benchmark_indices ORDER BY date", conn)
-                benchmarks['date'] = pd.to_datetime(benchmarks['date'])
-                
+            all_nav = load_csv_data("clean_nav_history.csv")
+            fund_nav = all_nav[all_nav['amfi_code'] == code][['date', 'nav']].copy()
+            fund_nav['date'] = pd.to_datetime(fund_nav['date'])
+            fund_nav = fund_nav.sort_values('date')
+            benchmarks = load_csv_data("clean_benchmark_indices.csv")
+            benchmarks['date'] = pd.to_datetime(benchmarks['date'])
+            
             fund_nav = fund_nav[fund_nav['date'] >= '2023-05-29']
             benchmarks = benchmarks[benchmarks['date'] >= '2023-05-29']
             bench_pivot = benchmarks.pivot(index='date', columns='index_name', values='close_value').reset_index()
@@ -853,9 +854,10 @@ elif page == "Monte Carlo Projections":
         code = int(fund_row['amfi_code'])
         
         try:
-            with get_db_connection() as conn:
-                fund_nav = pd.read_sql("SELECT date, nav FROM nav_history WHERE amfi_code = ? ORDER BY date", conn, params=(code,))
-                fund_nav['date'] = pd.to_datetime(fund_nav['date'])
+            all_nav = load_csv_data("clean_nav_history.csv")
+            fund_nav = all_nav[all_nav['amfi_code'] == code][['date', 'nav']].copy()
+            fund_nav['date'] = pd.to_datetime(fund_nav['date'])
+            fund_nav = fund_nav.sort_values('date')
                 
             if not fund_nav.empty:
                 # Calculate daily return parameters

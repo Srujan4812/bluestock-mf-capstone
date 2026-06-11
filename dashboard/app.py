@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import sqlite3
-import contextlib
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
@@ -129,32 +127,8 @@ st.markdown("""
 ROOT_DIR = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"
 
-# Check and dynamically generate processed data files if missing (e.g., when deployed to Streamlit Cloud)
-required_files = [
-    "clean_fund_master.csv", 
-    "fund_scorecard.csv", 
-    "alpha_beta.csv", 
-    "var_cvar_report.csv", 
-    "sector_hhi.csv", 
-    "cohort_analysis.csv"
-]
-missing_files = [f for f in required_files if not (PROCESSED_DIR / f).exists()]
-if missing_files:
-    import sys
-    
-    # Ensure directories exist
-    (ROOT_DIR / "data" / "db").mkdir(parents=True, exist_ok=True)
-    (ROOT_DIR / "reports" / "charts").mkdir(parents=True, exist_ok=True)
-    
-    # Run pipelines directly in-process
-    sys.path.append(str(ROOT_DIR / "scripts"))
-    import etl_pipeline
-    import compute_metrics
-    import advanced_analytics
-    
-    etl_pipeline.run()
-    compute_metrics.main()
-    advanced_analytics.main()
+# Pre-processed CSV data files are committed to the repository.
+# No ETL pipeline execution is needed at startup.
 
 # Helper function to load cleaned CSVs
 @st.cache_data
@@ -163,15 +137,6 @@ def load_csv_data(filename):
     if path.exists():
         return pd.read_csv(path)
     return pd.DataFrame()
-
-@contextlib.contextmanager
-def get_db_connection():
-    db_path = ROOT_DIR / "data" / "db" / "bluestock_mf.db"
-    conn = sqlite3.connect(db_path)
-    try:
-        yield conn
-    finally:
-        conn.close()
 
 # Load common datasets
 fund_master = load_csv_data("clean_fund_master.csv")

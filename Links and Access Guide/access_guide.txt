@@ -1,0 +1,23 @@
+Bluestock Mutual Fund Analytics Workspace - Access Guide
+
+This project is an interactive analytics dashboard for Indian Mutual Funds. It compiles historical NAVs, fund manager mappings, raw transaction logs, and portfolio holdings into a relational database, calculates performance and risk statistics, and presents them in a multi-page web application.
+
+1. Links
+Code Repository: https://github.com/Srujan4812/bluestock-mf-capstone
+Live Dashboard: https://bluestock-mf-capstone-1.onrender.com
+
+Note: Since the live dashboard is hosted on a free Render server, the container goes to sleep after periods of inactivity. If the page doesn't load immediately, please wait 1 to 2 minutes for the initial spin-up to complete.
+
+2. Project Details
+We built a Streamlit-based workspace containing several key analytical pages:
+- Industry Overview: Displays key stats like Total AUM (Rs. 81.0 L Cr), Monthly SIP flows, and folio growth by category.
+- Fund Performance: Evaluates risk-adjusted returns (CAGR, Alpha, Beta, Sharpe and Sortino ratios), and ranks funds using a custom composite scorecard. It also shows daily Value at Risk (VaR 95%), sector concentration (HHI Index), and a personalized fund recommender.
+- Investor Analytics: Renders retail demographic insights, transaction splits, monthly volume trends, and cohort retention.
+- SIP & Market Trends: Highlights monthly SIP inflows and category-wise net flows.
+- Projections: Applies a Monte Carlo simulation (using Geometric Brownian Motion) to project NAV growth paths over 4 to 5 years.
+- Portfolio Optimization: Employs Modern Portfolio Theory (MPT) to calculate the Markowitz Efficient Frontier and suggest optimal fund allocations for a balanced portfolio.
+
+3. How to Run Locally
+If you want to run the project locally, navigate to the Source Code directory and execute:
+- Install packages: pip install -r requirements.txt
+- Start the server: streamlit run dashboard/app.py
